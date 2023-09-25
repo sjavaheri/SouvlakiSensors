@@ -24,8 +24,12 @@ def play_sound():
 def play_sound_on_button_press():
     "In an infinite loop, play a single note when the touch sensor is pressed."
     try:
-        ...
+        while True:
+            if TOUCH_SENSOR.is_pressed():
+                print("Touch sensor has been pressed")
+                play_sound()
     except BaseException:  # capture all exceptions including KeyboardInterrupt (Ctrl-C)
+        BP.reset_all()  # reset all before exiting program
         exit()
 
 
