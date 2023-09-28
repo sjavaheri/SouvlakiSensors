@@ -24,6 +24,7 @@ def collect_color_sensor_data(debug=False):
     "Collect color sensor data."
     # open the csv file to write data to it row by row (overwrites other data)
     csvFile = open(COLOR_SENSOR_DATA_FILE, "w")
+    csvFile.close()
 
     # stores the current state of the touch sensor (true if pressed, false otherwise)
     state = False
@@ -40,25 +41,24 @@ def collect_color_sensor_data(debug=False):
                 counter = counter + 1
                 # break down the r,g,b values
                 red, green, blue = EV3ColorSensor.get_rgb()
-                # write to csv file
+                # open csv file and append results to it. Close afterwards                
+                csvFile = open(COLOR_SENSOR_DATA_FILE, "a")
                 csvFile.write('{:d}, {:d}, {:d}\n'.format(red, green, blue))
+                csvFile.close()
                 # print results to console
                 if (debug):
                     print("\nTrigger Number: ",counter,". See data below: \n")
                     print("Red: ", red, "Green: ", green, "Blue: ", blue, "\n")
+                status = False
                 # sleep for 0.1 seconds
                 time.sleep(SLEEP_TIME)
-                status = False
             else: 
                 time.sleep(SLEEP_TIME)
         # catch any errors 
         except SensorError as e: 
             print("There was an error from the sensor: ", e)
         except KeyboardInterrupt: 
-                print("Keyboard Interrupt. Exiting program.")
-        finally:
-            csvFile.close()
-            print("CSV file closed.")
+            print("Keyboard Interrupt. Exiting program.")
 
 if __name__ == "__main__":
     collect_color_sensor_data(debug=True)
