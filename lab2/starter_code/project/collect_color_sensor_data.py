@@ -6,7 +6,7 @@ It must be run on the robot.
 """
 
 # Add your imports here, if any
-from utils.brick import EV3ColorSensor, wait_ready_sensors, TouchSensor, SensorError
+from utils.brick import EV3ColorSensor, wait_ready_sensors, TouchSensor, SensorError, reset_brick
 import csv
 import time 
 
@@ -49,7 +49,7 @@ def collect_color_sensor_data(debug=False):
                 if (debug):
                     print("\nTrigger Number: ",counter,". See data below: \n")
                     print("Red: ", red, "Green: ", green, "Blue: ", blue, "\n")
-                status = False
+                state = False
                 # sleep for 0.1 seconds
                 time.sleep(SLEEP_TIME)
             else: 
@@ -59,6 +59,11 @@ def collect_color_sensor_data(debug=False):
             print("There was an error from the sensor: ", e)
         except KeyboardInterrupt: 
             print("Keyboard Interrupt. Exiting program.")
+        finally: 
+            print ("Terminating Program")
+            reset_brick()
+            exit()
+
 
 if __name__ == "__main__":
     collect_color_sensor_data(debug=True)
