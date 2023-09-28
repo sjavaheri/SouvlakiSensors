@@ -22,7 +22,7 @@ wait_ready_sensors(True) # Input True to see what the robot is trying to initial
 
 def collect_color_sensor_data(debug=False):
     "Collect color sensor data."
-    # open the csv file to write data to it row by row (overwrites other data)
+    # open the csv file to clear it of contents / create it. Close it afterwards (later will be opened in append mode)
     csvFile = open(COLOR_SENSOR_DATA_FILE, "w")
     csvFile.close()
 
