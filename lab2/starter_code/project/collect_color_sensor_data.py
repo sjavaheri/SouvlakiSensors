@@ -48,7 +48,7 @@ def collect_color_sensor_data(debug=False):
                     print("Red: ", red, "Green: ", green, "Blue: ", blue, "\n")
                 # sleep for 0.1 seconds
                 time.sleep(SLEEP_TIME)
-                status = False
+                state = False
             else: 
                 time.sleep(SLEEP_TIME)
         # catch any errors 
