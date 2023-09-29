@@ -9,6 +9,7 @@ It must be run on the robot.
 from utils.brick import EV3ColorSensor, wait_ready_sensors, TouchSensor, SensorError, reset_brick
 import csv
 import time 
+import math 
 
 
 COLOR_SENSOR_DATA_FILE = "../data_analysis/color_sensor.csv"
@@ -20,7 +21,7 @@ TouchSensor = TouchSensor(1)
 wait_ready_sensors(True) # Input True to see what the robot is trying to initialize! False to be silent.
 
 
-def collect_color_sensor_data(debug=False):
+def collect_color_sensor_data(debug=False, classify=False):
     "Collect color sensor data."
     # open the csv file to clear it of contents / create it. Close it afterwards (later will be opened in append mode)
     csvFile = open(COLOR_SENSOR_DATA_FILE, "w")
@@ -49,6 +50,9 @@ def collect_color_sensor_data(debug=False):
                 if (debug):
                     print("\nTrigger Number: ",counter,". See data below: \n")
                     print("Red: ", red, "Green: ", green, "Blue: ", blue, "\n")
+                if (classify): 
+                    color = classifyColoredCube(red, green, blue)
+                    print("The color of the cube is: ", color)
                 state = False
                 # sleep for 0.1 seconds
                 time.sleep(SLEEP_TIME)
@@ -59,11 +63,22 @@ def collect_color_sensor_data(debug=False):
             print("There was an error from the sensor: ", e)
         except KeyboardInterrupt: 
             print("Keyboard Interrupt. Exiting program.")
-        finally: 
-            print ("Terminating Program")
-            reset_brick()
-            exit()
 
+# function to classify the color of a cube
+def classifyColoredCube(red, green, blue): 
+    # color table: [red, green, blue, color], for colors red, orange, yellow, green, blue, purple
+    colorTable = [[284.0, 41.0, 23.25, "red"], [386.0, 109.45, 46.55, "orange"], [328.40, 278.75, 20.00, "yellow"], [29.15, 157.90, 28.80, "green"], [29.65, 66.25, 63.60, "blue"], [82.40, 61.00, 63.95, "purple"]]
+    # store color and shortest distance
+    currentColor = ''
+    shortestDistance = 9999999
+    # iterate through all colors and calculate the euclidean distance of the datapoint from the mean r g b values
+    for i in range(0,6): 
+        distance = math.sqrt((red - colorTable[i][0])**2 + (green - colorTable[i][1])**2 + (blue - colorTable[i][2])**2)
+        # update if shorter distance found
+        if (distance < shortestDistance): 
+            shortestDistance = distance
+            currentColor = colorTable[i][3]
+    return currentColor
 
 if __name__ == "__main__":
-    collect_color_sensor_data(debug=True)
+    collect_color_sensor_data(debug=True, classify=False)
