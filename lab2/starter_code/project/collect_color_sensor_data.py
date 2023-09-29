@@ -31,6 +31,20 @@ def collect_color_sensor_data(debug=False, classify=False):
     state = False
     counter = 0
 
+    validInput = False
+    while (not validInput):
+        decision = input("Would you like to test the classification algorithm? yes/no \n ").lower()
+        if (decision == "yes"): 
+            print("Classificaion test activated\n")
+            validInput = True
+            classify = True
+        elif (decision == "no"):
+            print("Classification test not activated")
+            validInput = True
+            classify = False
+        else: 
+            print ("Please enter a valid input: yes or no")
+
     while True: 
         try: 
             # sleep for 0.1 seconds
