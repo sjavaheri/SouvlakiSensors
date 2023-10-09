@@ -6,11 +6,13 @@ from utils import sound
 from utils.brick import TouchSensor, wait_ready_sensors
 import time
 import brickpi3
+import threading
 
 debug = True
 
 # polling time of the robot
 SLEEP_TIME = 0.01
+DRUM_TIME = 1
 
 # brick pi instance
 BP = brickpi3.BrickPi3()
@@ -19,6 +21,20 @@ BP = brickpi3.BrickPi3()
 drum = BP.PORT_B
 maxPowerDrum = 80
 maxSpeedDrum = 270
+
+# infinite while loop for running the drum
+# uses threading to be able to start and stop a while loop from within another one
+
+stopDrumsFlag = threading.Event()
+
+def drummingLoop(): 
+    while not stopDrumsFlag: 
+        # do the drum motions
+        drum.set_power(maxPowerDrum)
+        drum.set_position_relative(60)
+        drum.set_power(0)
+        time.sleep(DRUM_TIME)
+    return
 
 if __name__=='__main__':
 
@@ -39,6 +55,10 @@ if __name__=='__main__':
 stop = False
 startDrumming = False
 drumsPlaying = False
+
+# create thread for drums
+drumsThread = threading.Thread(target=drummingLoop)
+
 # infinite polling loop for musical instrument
 while True:
     try: 
@@ -51,11 +71,15 @@ while True:
         # will loop back up until stop becomes true again
         if (stop == True): 
             # TODO: Add function call to stop the drums
-            # if (drumsPlaying): 
-                # stop drums if they are playing 
-                # drumsPlaying = False
+            if (drumsPlaying): 
+                # stop drum thread gracefully
+                stopDrumsFlag.set()
+                drumsThread.join()
+                drumsPlaying = False
             continue
         
+        if (startDrumming and (not drumsPlaying)): 
+            drumsThread.start()
         
     except BaseException:  # capture all exceptions including KeyboardInterrupt (Ctrl-C)
         BP.reset_all()  # reset all before exiting program
