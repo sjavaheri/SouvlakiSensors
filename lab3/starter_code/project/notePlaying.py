@@ -13,6 +13,8 @@ import brickpi3
 
 SLEEP_TIME = 0.01
 
+debug = True
+
 # touch sensors
 tSensor1 = TouchSensor(1)
 tSensor2 = TouchSensor(2)
@@ -45,45 +47,29 @@ def notePlaying():
             #control polling rate the musical instrument
             time.sleep(SLEEP_TIME)
 
-            # check if touch sensor 1 is pressed
+            # poll touch sensors
             if (tSensor1.is_pressed()):
-                print("Touch sensor 1 has been pressed")
+                if (debug): print("Touch sensor 1 has been pressed")
                 # call play sound function
                 play_sound(sound1)
-                # loop until the button is no longer pressed
-                while (tSensor1.is_pressed()):
-                    print("Touch sensor 1 is still being pressed")
-                    play_sound(sound1)
                 
             # check if touch sensor 2 is pressed
             if (tSensor2.is_pressed()):
-                print("Touch sensor 2 has been pressed")
+                if (debug): print("Touch sensor 2 has been pressed")
                 # call play sound function
                 play_sound(sound2)
-                # loop until the button is no longer pressed
-                while (tSensor2.is_pressed()):
-                    print("Touch sensor 2 is still being pressed")
-                    play_sound(sound2)
             
             # check if touch sensor 3 is pressed
             if (tSensor3.is_pressed()):
-                print("Touch sensor 3 has been pressed")
+                if (debug): print("Touch sensor 3 has been pressed")
                 # call play sound function
                 play_sound(sound3)
-                # loop until the button is no longer pressed
-                while (tSensor3.is_pressed()):
-                    print("Touch sensor 3 is still being pressed")
-                    play_sound(sound3)
             
             # check if touch sensor 4 is pressed
             if (tSensor4.is_pressed()):
-                print("Touch sensor 4 has been pressed")
+                if (debug): print("Touch sensor 4 has been pressed")
                 # call play sound function
                 play_sound(sound4)
-                # loop until the button is no longer pressed
-                while (tSensor4.is_pressed()):
-                    print("Touch sensor 4 is still being pressed")
-                    play_sound(sound4)
 
             
     except BaseException:  # capture all exceptions including KeyboardInterrupt (Ctrl-C)
