@@ -3,7 +3,7 @@
 Code for the music playing robot 
 """ 
 from utils import sound
-from utils.brick import TouchSensor, wait_ready_sensors
+from utils.brick import TouchSensor, wait_ready_sensors, Motor
 import time
 import brickpi3
 import threading
@@ -13,11 +13,13 @@ debug = True
 # polling time of the robot
 SLEEP_TIME = 0.01
 DRUM_TIME = 1
+SPEED = 140
 
 # brick pi instance
 BP = brickpi3.BrickPi3()
 
 # drum motor
+drumMotor = Motor("B")
 drum = BP.PORT_B
 maxPowerDrum = 80
 maxSpeedDrum = 270
@@ -29,11 +31,15 @@ stopDrumsFlag = threading.Event()
 
 def drummingLoop(): 
     while not stopDrumsFlag: 
-        # do the drum motions
-        drum.set_power(maxPowerDrum)
-        drum.set_position_relative(60)
-        drum.set_power(0)
+        if debug:
+            print("drumsPlaying")
+        
+        drumMotor.set_position(60)
+        time.sleep(DRUM_TIME) 
+        drumMotor.set_position(0)
         time.sleep(DRUM_TIME)
+        exit()
+    
     return
 
 if __name__=='__main__':
@@ -42,8 +48,8 @@ if __name__=='__main__':
     try: 
         # drum
         BP.offset_motor_encoder(drum, BP.get_motor_encoder(drum))
-        BP.set_motor_limits(drum, maxPowerDrum, maxSpeedDrum)
-        BP.set_motor_power(drum, 0)
+        drumMotor.set_limits(maxPowerDrum, maxSpeedDrum)
+        drumMotor.set_power(0)
     except IOError as error:
 
         if debug: 
@@ -63,7 +69,7 @@ drumsThread = threading.Thread(target=drummingLoop)
 while True:
     try: 
         #control polling rate the musical instrument
-        time.sleep(SLEEP_TIME)
+        time.sleep(DRUM_TIME)
 
         startDrumming = True
 
@@ -78,9 +84,12 @@ while True:
                 drumsPlaying = False
             continue
         
-        if (startDrumming and (not drumsPlaying)): 
+        if (startDrumming and (not drumsPlaying)):
             drumsThread.start()
-        
-    except BaseException:  # capture all exceptions including KeyboardInterrupt (Ctrl-C)
+            drumsPlaying = True
+            print("drums thread started")
+
+    except BaseException as e:  # capture all exceptions including KeyboardInterrupt (Ctrl-C)
         BP.reset_all()  # reset all before exiting program
+        print(e)
         exit()  
