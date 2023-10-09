@@ -34,7 +34,6 @@ def drummingLoop():
         if debug:
             print("drumsPlaying")
         
-        drumMotor.set_position(60)
         time.sleep(DRUM_TIME) 
         drumMotor.set_position(0)
         time.sleep(DRUM_TIME)
@@ -59,9 +58,9 @@ if __name__=='__main__':
 
 # variables for start stop subsystem
 stop = False
-startDrumming = False
-drumsPlaying = False
-
+drumsOn = False
+up = True
+counter = 0
 # create thread for drums
 drumsThread = threading.Thread(target=drummingLoop)
 
@@ -71,24 +70,36 @@ while True:
         #control polling rate the musical instrument
         time.sleep(DRUM_TIME)
 
-        startDrumming = True
 
         # prevent any other behaviour if stop == true, and stop the drums
         # will loop back up until stop becomes true again
         if (stop == True): 
             # TODO: Add function call to stop the drums
-            if (drumsPlaying): 
-                # stop drum thread gracefully
-                stopDrumsFlag.set()
-                drumsThread.join()
-                drumsPlaying = False
+            if drumsOn: 
+                # stop drums 
+                drumsOn = False 
             continue
         
-        if (startDrumming and (not drumsPlaying)):
-            drumsThread.start()
-            drumsPlaying = True
-            print("drums thread started")
+        if drumsOn:
+            # counter to control that drumming polling rate is slower than polling rate of machine
+            counter = counter + 1
+            if (counter % 50 == 0):
+                # reset counter 
+                counter = 0 
+                # move drum arm either up or down
+                if (up): 
+                    up = False
+                    drumMotor.set_position(90)
+                else: 
+                    up = True
+                    drumMotor.set_position(-2)
+            
 
+
+
+
+                
+    
     except BaseException as e:  # capture all exceptions including KeyboardInterrupt (Ctrl-C)
         BP.reset_all()  # reset all before exiting program
         print(e)
