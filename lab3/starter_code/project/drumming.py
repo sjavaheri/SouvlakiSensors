@@ -21,8 +21,8 @@ BP = brickpi3.BrickPi3()
 # drum motor
 drumMotor = Motor("B")
 drum = BP.PORT_B
-maxPowerDrum = 40
-maxSpeedDrum = 150
+maxPowerDrum = 80
+maxSpeedDrum = 270
 
 # infinite while loop for running the drum
 # uses threading to be able to start and stop a while loop from within another one
@@ -58,7 +58,7 @@ if __name__=='__main__':
 
 # variables for start stop subsystem
 stop = False
-drumsOn = True
+drumsOn = False
 up = True
 counter = 0
 # create thread for drums
@@ -68,47 +68,36 @@ drumsThread = threading.Thread(target=drummingLoop)
 while True:
     try: 
         #control polling rate the musical instrument
-        time.sleep(SLEEP_TIME)
+        time.sleep(DRUM_TIME)
 
 
         # prevent any other behaviour if stop == true, and stop the drums
         # will loop back up until stop becomes true again
         if (stop == True): 
             # TODO: Add function call to stop the drums
-            if (drumsOn == True): 
+            if drumsOn: 
                 # stop drums 
                 drumsOn = False 
             continue
         
-        if (drumsOn == True):
+        if drumsOn:
             # counter to control that drumming polling rate is slower than polling rate of machine
-
-            if debug:
-                print(counter)
-
+            counter = counter + 1
             if (counter % 50 == 0):
                 # reset counter 
                 counter = 0 
                 # move drum arm either up or down
-                # motor is upside down so we swap the signs
                 if (up): 
                     up = False
-                    drumMotor.set_position(-45)
-                
-                    if debug:
-                        print("up")
-
+                    drumMotor.set_position(90)
                 else: 
                     up = True
-                    drumMotor.set_position(2)
+                    drumMotor.set_position(-2)
             
                     if debug:
                         print("down")
 
             counter = counter + 1
-
-
-
                 
     
     except BaseException as e:  # capture all exceptions including KeyboardInterrupt (Ctrl-C)

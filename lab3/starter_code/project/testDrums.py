@@ -1,3 +1,4 @@
+
 """
 Code for the music playing robot
 """
@@ -16,17 +17,6 @@ DRUM_TIME = 1
 # brick pi instance
 BP = brickpi3.BrickPi3()
 
-# touch sensors
-tSensor1 = TouchSensor(1)
-tSensor2 = TouchSensor(2)
-tSensor3 = TouchSensor(3)
-tSensor4 = TouchSensor(4)
-
-# sounds
-sound1 = sound.Sound(duration=0.3, pitch="C4", volume=100)
-sound2 = sound.Sound(duration=0.3, pitch="D4", volume=100)
-sound3 = sound.Sound(duration=0.3, pitch="E4", volume=100)
-sound4 = sound.Sound(duration=0.3, pitch="F4", volume=100)
 
 # startStop motor
 startStop = BP.PORT_A
@@ -49,48 +39,10 @@ wait_ready_sensors()  # Note: Touch sensors actually have no initialization time
 if (debug):
     print("Touch sensors ready")
 
-# play a single note
-def play_sound(SOUND):
-    "Play a single note."
-    SOUND.play()
-    # ensures that two sounds can be played together, which we want for flute like behaviour
-    SOUND.wait_done()
-
-# polling sensors in a seperate thread
-def poll_sensors(): 
-    while True: 
-
-        # emergency stop
-        if stop:
-            continue
-
-        # poll touch sensors
-        if (tSensor1.is_pressed()):
-            if (debug):
-                print("Touch sensor 1 has been pressed")
-            # call play sound function in a serperate thread
-            play_sound(sound1)
-
-        # check if touch sensor 2 is pressed
-        if (tSensor2.is_pressed()):
-            if (debug):
-                print("Touch sensor 2 has been pressed")
-            # call play sound function
-            play_sound(sound2)
-
-        # check if touch sensor 3 is pressed
-        if (tSensor3.is_pressed()):
-            if (debug):
-                print("Touch sensor 3 has been pressed")
-            # call play sound function
-            play_sound(sound3)
-
-        # check if touch sensor 4 is pressed
-        if (tSensor4.is_pressed()):
-            if (debug):
-                print("Touch sensor 4 has been pressed")
-            # call play sound function
-            play_sound(sound4)
+# open a file to write the strike data
+file = open("strike_data.csv", "w")
+# close file 
+file.close()
 
 
 
@@ -119,10 +71,6 @@ drums_on = False
 # time variable for drum polling
 old_time = time.time()
 
-# thread for the polling of sensors
-sensors = threading.Thread(target=poll_sensors, daemon = True)
-# begin infinite polling of sensors
-sensors.start()
 
 # infinite polling loop for musical instrument
 while True:
@@ -161,18 +109,21 @@ while True:
             # counter to control that drumming polling rate is slower than polling rate of machine
             if (time.time() - old_time > 1):
                 # move drum arm either up or down
-
                 if (up): 
                     up = False
                     drumMotor.set_position(-45)
-                    if debug: 
-                        print("up")
+                    # open file and write to it
+                    file = open("strike_data.csv", "a")
+                    file.write(str(time.time()-old_time) + "\n")
+                    file.close()
+
                 else: 
                     up = True
                     drumMotor.set_position(2)
-            
-                    if debug:
-                        print("down")
+                    # open file and write to it
+                    file = open("strike_data.csv", "a")
+                    file.write(str(time.time()-old_time) + "\n")
+                    file.close()
 
                 old_time = time.time()
 
