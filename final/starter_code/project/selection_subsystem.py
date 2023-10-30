@@ -1,8 +1,6 @@
 # Selection Subsystem Code
 # Authors: Shidan Javaheri, Alice Godbout
 
-
-
 # Main Function for Selection Subsystem
 # --------------------------------
 

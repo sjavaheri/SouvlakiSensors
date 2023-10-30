@@ -13,10 +13,16 @@ colorTable39 = [[0.742003,0.187976,0.070021, "red"], [0.189534, 0.646703, 0.1637
 colorTable40 = [[0.755809, 0.146725, 0.097466, "red"], [0.19179, 0.579413, 0.228797, "green"], [0.26186, 0.342986, 0.395153, "blue"], 
                 [0.50464, 0.334221, 0.16114, "other"]]
 
+# Global Variables for Movement Subsytem
+# --------------------------------------
+SPEED = 150
+DELTA = 20
+SAMPLING_RATE = 0.2
+
 # Main Functions for Movement Subsystem
 # --------------------------------
 
-def move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_39, color_sensor_40): 
+def move_to_point(x, y, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left): 
     """
     Moves the robot to a point on the city grid, so that it can deploy the fire suppressant
 
@@ -35,6 +41,30 @@ def move_to_point(x, y, city_state, current_position, current_bearing, left_whee
         tuple: current position of the robot
         int: current bearing of the robot
     """
+
+    return
+
+def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left): 
+    """
+    Move robot forward until both color sensors read green
+
+    Error: if any color sensor reads red or blue
+
+    Args: 
+        right_wheel (Motor): right wheel motor
+        left_wheel (Motor): left wheel motor
+        color_sensor_right (ColorSensor): color sensor 39
+        color_sensor_left (ColorSensor): color sensor 40
+    
+    Returns:
+        None
+    """
+    while True: 
+        
+        # get the readings of the two color sensors
+        r,g,b = color_sensor_right.get_value()
+        
+
 
     return 
 
@@ -118,6 +148,8 @@ def shortest_path(graph, start_x, start_y, end_x, end_y):
                 priority_queue.append((new_x, new_y, new_path))
 
     return None
+
+
 
 
 def classifyColor(id, red, green, blue): 

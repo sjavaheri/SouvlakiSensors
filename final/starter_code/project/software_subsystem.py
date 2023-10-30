@@ -14,7 +14,7 @@ from deployment_subsystem import *
 # --------------------------------------
 
 # state of the city. Represented by 4 * 4 matrix of 0s. 
-# fire code : Types 1 - 6 Represented by integeres 1 - 6
+# fire code : Types A - F Represented by integeres 1 - 6
 debug = True
 city_state = [[0 for _ in range(4)] for _ in range(4)]
 current_bearing = 0 
@@ -70,6 +70,8 @@ def get_user_input():
     Convert coordinates into proper coordinates for array 
     User will input (x,y). We will not adjust the values
 
+    Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3
+
     Returns:
         list : a list of tuples representing the fire coordinates, in order of increasing distance from the starting position 0,0
     """
@@ -87,8 +89,9 @@ if __name__ == '__main__':
     # ------------------------
 
     # color sensors
-    color_sensor_39 = EV3ColorSensor(1)
-    color_sensor_40 = EV3ColorSensor(2)
+    # color sensor 39 
+    color_sensor_right = EV3ColorSensor(1)
+    color_sensor_left = EV3ColorSensor(2)
 
     # Initialize Motors
     # -----------------
@@ -141,7 +144,7 @@ if __name__ == '__main__':
             for x,y in fire_coordinates: 
 
                 # move to fire
-                current_position, current_bearing = move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_39, color_sensor_40); 
+                current_position, current_bearing = move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left); 
                 state = "selecting"
 
                 # select fire suppressant
@@ -157,7 +160,7 @@ if __name__ == '__main__':
                 state = "moving"
 
             # go home
-            current_position, current_bearing = move_to_point(0, 0, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_39, color_sensor_40)
+            current_position, current_bearing = move_to_point(0, 0, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left)
 
             # reorient to have forward facing bearing
             # use turn function
