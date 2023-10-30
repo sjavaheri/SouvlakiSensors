@@ -2,6 +2,7 @@
 # Authors: Shidan Javaher, Alice Godbout
 from collections import deque
 import math
+import time
 
 # Data Structures for Movement Subsystem
 # --------------------------------------
@@ -15,9 +16,15 @@ colorTable40 = [[0.755809, 0.146725, 0.097466, "red"], [0.19179, 0.579413, 0.228
 
 # Global Variables for Movement Subsytem
 # --------------------------------------
-SPEED = 150
-DELTA = 20
+SPEED = 200
+DELTA = 10
+WHEEL_RADIUS = 0.0415
+AXLE_LENGTH = 0.173
+ORIENT_TO_DEG = AXLE_LENGTH/WHEEL_RADIUS
 SAMPLING_RATE = 0.2
+TURN_SPEED = 200
+debug = True
+
 
 # Main Functions for Movement Subsystem
 # --------------------------------
@@ -41,10 +48,10 @@ def move_to_point(x, y, city_state, current_position, current_bearing, right_whe
         tuple: current position of the robot
         int: current bearing of the robot
     """
-
+    move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
     return
 
-def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left): 
+def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA): 
     """
     Move robot forward until both color sensors read green
 
@@ -59,16 +66,52 @@ def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left):
     Returns:
         None
     """
+
+    # loop until destination reached
     while True: 
         
         # get the readings of the two color sensors
-        r,g,b = color_sensor_right.get_value()
+        rr,gr,br = color_sensor_right.get_rgb()
+        rl,gl,bl = color_sensor_left.get_rgb()
+        color_right = classifyColor(39, rr, gr, br)
+        color_left = classifyColor(40, rl, gl, bl)
+
+        if debug: 
+            print("Left Color: ", color_left, "Right Color: ", color_right)
+
+        # check if destination is reached
+        if (color_right == "green" and color_left == "green"): 
+            left_wheel.set_dps(0)
+            right_wheel.set_dps(0)
+            return
         
+        # determine if the error is to the left or right 
+        error = "none"
+        if (color_left == "red" or color_left == "blue"): 
+            error = "left"
+        elif (color_right == "red" or color_right == "blue"):
+            error = "right"
+        else:
+            error = "none"
+        if debug: 
+            print("The current error is: ", error)
+        
+        # adjust the motors based on the error
 
+        # if error is to the left, turn right
+        if (error == "left"): 
+            left_wheel.set_dps(SPEED + DELTA)
+            right_wheel.set_dps(SPEED)
+        elif (error == "right"): 
+            left_wheel. set_dps(SPEED)
+            right_wheel.set_dps(SPEED + DELTA)
+        else:
+            left_wheel.set_dps(SPEED)
+            right_wheel.set_dps(SPEED)
 
-    return 
+        time.sleep(SAMPLING_RATE)
 
-def reverse(current_position, current_bearing):
+def reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left):
     """
     Reveres the robot to the square it just came from, after deployment
 
@@ -79,6 +122,80 @@ def reverse(current_position, current_bearing):
     Returns: 
         tuple: current position of the robot
     """
+    # add move backwards by 5cm
+    move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left, -SPEED, -DELTA)
+    return
+
+def crossGreen(right_wheel, left_wheel, color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA):
+    """
+    Code to cross through a building that is not on fire
+
+    Args: 
+        right_wheel (Motor): right wheel motor
+        left_wheel (Motor): left wheel motor
+        color_sensor_right (ColorSensor): color sensor 39
+        color_sensor_left (ColorSensor): color sensor 40
+
+    Returns:
+        None
+    """
+    # loop until destination reached
+    while True: 
+        
+        # get the readings of the two color sensors
+        rr,gr,br = color_sensor_right.get_rgb()
+        rl,gl,bl = color_sensor_left.get_rgb()
+        color_right = classifyColor(39, rr, gr, br)
+        color_left = classifyColor(40, rl, gl, bl)
+
+        if debug: 
+            print("Left Color: ", color_left, "Right Color: ", color_right)
+
+        # check if destination is reached
+        if (color_right == "other" and color_left == "other"): 
+            left_wheel.set_dps(0)
+            right_wheel.set_dps(0)
+            return
+        
+        # determine if the error is to the left or right 
+        error = "none"
+        if (color_left !="green"): 
+            error = "left"
+        elif (color_right == "green"):
+            error = "right"
+        else:
+            error = "none"
+        if debug: 
+            print("The current error is: ", error)
+        
+        # adjust the motors based on the error
+
+        # if error is to the left, turn right
+        if (error == "left"): 
+            left_wheel.set_dps(SPEED + DELTA)
+            right_wheel.set_dps(SPEED)
+        elif (error == "right"): 
+            left_wheel. set_dps(SPEED)
+            right_wheel.set_dps(SPEED + DELTA)
+        else:
+            left_wheel.set_dps(SPEED)
+            right_wheel.set_dps(SPEED)
+
+        time.sleep(SAMPLING_RATE)
+
+def turn(right_wheel, left_wheel, color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA):
+    return
+
+def turn_blind(right_wheel, left_wheel, SPEED=SPEED, DELTA=DELTA):
+    print("turn")
+    left_wheel.set_dps(SPEED)
+    right_wheel.set_dps(-SPEED+10)
+    time.sleep(1.6)
+    left_wheel.set_dps(0)
+    right_wheel.set_dps(0)
+
+    
+
 
 
 # Helper Functions for Movement Subsystem

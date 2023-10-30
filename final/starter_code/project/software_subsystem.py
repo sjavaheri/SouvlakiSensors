@@ -21,37 +21,21 @@ current_bearing = 0
 current_position = (0,0)
 state = ""
 
-# motor setup
-def setup_motor(port, max_power, max_speed):
-    """
-    Sets the properties of a motor
-    
-    Args: 
-        port (int): Port number of the motor
-        max_power (int): Maximum power of the motor
-        max_speed (int): Maximum speed of the motor
-
-    Returns:
-        None
-    """
-
-    try:
-        # set motor properties       
-        BP.offset_motor_encoder(port, BP.get_motor_encoder(port))
-        BP.set_motor_limits(port, max_power, max_speed)
-        BP.set_motor_power(port, 0)
-
-    except IOError as error:
-
-        if debug:
-            print("Motor initialization failed due to error : ", error)
-        BP.reset_all()
-        exit()
-
-def wait_for_sensors():
+def wait_for_sensors(c1, c2):
     """
     Waits for the sensors to be ready
     """
+    # example from brick pi 2
+    test_left_cs = 0 
+    test_right_cs = 0
+    while (test_left_cs == 0 and test_right_cs ==0): 
+        try: 
+            test_left_cs = BP.get_sensor(c1.port)
+            test_right_cs = BP.get_snesor(c2.port)
+        except: 
+            time.sleep(0.05)
+
+    # built in function
     wait_ready_sensors()
     print("System Boot Successful. The Exterminator is ready to exterminnate!")
     return
@@ -101,8 +85,8 @@ if __name__ == '__main__':
     left_wheel = Motor("A")
 
     # right wheel
-    right_wheel_port = Motor("B")
-    right_wheel = BP.PORT_B
+    right_wheel_port = BP.PORT_B
+    right_wheel = Motor("B")
 
     max_power_wheels = 40
     max_speed_wheels = 150
@@ -123,47 +107,87 @@ if __name__ == '__main__':
 
 
     # setup all motors
-    for port in [left_wheel_port, right_wheel_port, selection_port, deployment_port]:
-        setup_motor(port, max_power_wheels, max_speed_wheels)
+    try:
+        # left_wheel_motor     
+        BP.offset_motor_encoder(left_wheel_port, BP.get_motor_encoder(left_wheel_port))
+        BP.set_motor_limits(left_wheel_port, max_power_wheels, max_speed_wheels)
+        BP.set_motor_power(left_wheel_port, 0)
+
+        # right_wheel_motor
+        BP.offset_motor_encoder(right_wheel_port, BP.get_motor_encoder(right_wheel_port))
+        BP.set_motor_limits(right_wheel_port, max_power_wheels, max_speed_wheels)
+        BP.set_motor_power(right_wheel_port, 0)
+
+        # selection_motor
+        BP.offset_motor_encoder(selection_port, BP.get_motor_encoder(selection_port))
+        BP.set_motor_limits(selection_port, max_power_select, max_speed_select)
+        BP.set_motor_power(selection_port, 0)
+
+        # deployment_motor
+        BP.offset_motor_encoder(deployment_port, BP.get_motor_encoder(deployment_port))
+        BP.set_motor_limits(deployment_port, max_power_deploy, max_speed_deploy)
+        BP.set_motor_power(deployment_port, 0)
+
+    except IOError as error:
+
+        if debug:
+            print("Motor initialization failed due to error : ", error)
+        BP.reset_all()
+        exit()
 
     # wait for sensors to be ready
-    wait_for_sensors()
+    wait_for_sensors(color_sensor_left, color_sensor_right)
 
     while True: 
         try: 
-            state = "Loading"
-            # display loading instructions
-            display_loading_instructions()
-            state = "Inputting"
 
-            # get user input to set fire locations
-            fire_coordinates = get_user_input()
-            state = "moving"
+            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # time.sleep(1)
+            # crossGreen(right_wheel, left_wheel, color_sensor_right, color_sensor_left, SPEED = -200, DELTA = -20)
+            # time.sleep(1)
+            # reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            time.sleep(1)
+            turn_blind(right_wheel, left_wheel)
+            time.sleep(1)
+            turn_blind(right_wheel, left_wheel)
+            time.sleep(1)
+            turn_blind(right_wheel, left_wheel)
+            time.sleep(1)
+            turn_blind(right_wheel, left_wheel)
+            break
+            # state = "Loading"
+            # # display loading instructions
+            # display_loading_instructions()
+            # state = "Inputting"
 
-            # now we are ready for the robot to move to the desired location
-            for x,y in fire_coordinates: 
+            # # get user input to set fire locations
+            # fire_coordinates = get_user_input()
+            # state = "moving"
 
-                # move to fire
-                current_position, current_bearing = move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left); 
-                state = "selecting"
+            # # now we are ready for the robot to move to the desired location
+            # for x,y in fire_coordinates: 
 
-                # select fire suppressant
-                select_fire_suppressant(city_state[x][y], selection_motor)
-                state = "deploying"
+            #     # move to fire
+            #     current_position, current_bearing = move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left); 
+            #     state = "selecting"
 
-                # deploy fire suppressant
-                deploy_fire(deployment_motor)
-                state = "reversing"
+            #     # select fire suppressant
+            #     select_fire_suppressant(city_state[x][y], selection_motor)
+            #     state = "deploying"
 
-                # reverse
-                current_position = reverse(current_position, current_bearing)
-                state = "moving"
+            #     # deploy fire suppressant
+            #     deploy_fire(deployment_motor)
+            #     state = "reversing"
 
-            # go home
-            current_position, current_bearing = move_to_point(0, 0, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            #     # reverse
+            #     current_position = reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            #     state = "moving"
 
-            # reorient to have forward facing bearing
-            # use turn function
+            # # go home
+            # current_position, current_bearing = move_to_point(0, 0, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+
+            # # reorient to have forward facing bearing
+            # # use turn function
 
         # capture all exceptions
         except BaseException:
