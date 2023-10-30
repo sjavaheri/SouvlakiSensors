@@ -2,7 +2,13 @@
 # Authors: Shidan Javaher, Alice Godbout
 
 # import statements
-from utils.brick import EV3ColorSensor, wait_ready_sensors, SensorError, reset_brick, Motor
+from utils.brick import (
+    EV3ColorSensor,
+    wait_ready_sensors,
+    SensorError,
+    reset_brick,
+    Motor,
+)
 import brickpi3
 
 # other subystem code
@@ -13,26 +19,27 @@ from deployment_subsystem import *
 # Data Structures for Software Subsystem
 # --------------------------------------
 
-# state of the city. Represented by 4 * 4 matrix of 0s. 
+# state of the city. Represented by 4 * 4 matrix of 0s.
 # fire code : Types A - F Represented by integeres 1 - 6
 debug = True
 city_state = [[0 for _ in range(4)] for _ in range(4)]
-current_bearing = 0 
-current_position = (0,0)
+current_bearing = 0
+current_position = (0, 0)
 state = ""
+
 
 def wait_for_sensors(c1, c2):
     """
     Waits for the sensors to be ready
     """
     # example from brick pi 2
-    test_left_cs = 0 
+    test_left_cs = 0
     test_right_cs = 0
-    while (test_left_cs == 0 and test_right_cs ==0): 
-        try: 
+    while test_left_cs == 0 and test_right_cs == 0:
+        try:
             test_left_cs = BP.get_sensor(c1.port)
             test_right_cs = BP.get_snesor(c2.port)
-        except: 
+        except:
             time.sleep(0.05)
 
     # built in function
@@ -40,40 +47,86 @@ def wait_for_sensors(c1, c2):
     print("System Boot Successful. The Exterminator is ready to exterminnate!")
     return
 
+
 # TODO
 
-def display_loading_instructions(): 
+
+def display_loading_instructions():
     """
     Displays instructions for how to load the robot. Asks user to enter yes when loading is complete
     """
+    # display instructions
+    response = input(
+        "Dear external robot operator, please follow the following instructions to load our robot. Do you confirm you want to continue?"
+    )
+
+    if "yes" in response.lower() or "y" == response.lower():
+        print("Place cubes according to the color displayed on the cardboard.")
+        confirmation = "Once you've finished loading the robot, please confirm below."
+
+        # ask the user to enter 'yes' once loading is complete
+        loading_response = ""
+        while loading_response.lower() != "yes" and loading_response.lower() != "y":
+            loading_response = input("Enter 'yes' or 'y' when loading is complete: ")
+
+        print("Robot loading confirmed. Proceed to the next step.")
+    else:
+        print(
+            "Loading instructions not displayed. Please confirm if you want to proceed."
+        )
+    print("Robot loading confirmed. Proceed to the next step.")
     return
 
-def get_user_input(): 
+
+def get_user_input():
     """
     Gets the user input for the fire coordinates
-    Convert coordinates into proper coordinates for array 
+    Convert coordinates into proper coordinates for array
     User will input (x,y). We will not adjust the values
 
     Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3
 
     Returns:
         list : a list of tuples representing the fire coordinates, in order of increasing distance from the starting position 0,0
+
     """
-    return 
+
+    fire_input = input(
+        "Enter the fire coordinates (Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3): "
+    )
+
+    # split the input string at commas
+    fires = []
+    for i in range(0, len(fire_input.split(",")), 3):
+        fires.append(fire_input.split(",")[i : i + 3])
+
+    # convert letter (fire types) into integers
+    fire_coords = []
+    for fire in fires:
+        x = int(fire[0])
+        y = int(fire[1])
+        letter_as_integer = ord(fire[2].upper()) - ord("A") + 1
+        fire_coords.append((x, y, letter_as_integer))
+
+    # sort fires by increasing distance from (0,0)
+    sorted_coords = sorted(fire_coords, key=lambda x: (x[0] ** 2 + x[1] ** 2) ** 0.5)
+
+    # print(sorted_coords)
+    return sorted_coords
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Main function of the softawre subsystem
     """
     # brick pi instance
     BP = brickpi3.BrickPi3()
 
-    # Initialize Input Sensors 
+    # Initialize Input Sensors
     # ------------------------
 
     # color sensors
-    # color sensor 39 
+    # color sensor 39
     color_sensor_right = EV3ColorSensor(1)
     color_sensor_left = EV3ColorSensor(2)
 
@@ -105,16 +158,17 @@ if __name__ == '__main__':
     max_power_deploy = 40
     max_speed_deploy = 150
 
-
     # setup all motors
     try:
-        # left_wheel_motor     
+        # left_wheel_motor
         BP.offset_motor_encoder(left_wheel_port, BP.get_motor_encoder(left_wheel_port))
         BP.set_motor_limits(left_wheel_port, max_power_wheels, max_speed_wheels)
         BP.set_motor_power(left_wheel_port, 0)
 
         # right_wheel_motor
-        BP.offset_motor_encoder(right_wheel_port, BP.get_motor_encoder(right_wheel_port))
+        BP.offset_motor_encoder(
+            right_wheel_port, BP.get_motor_encoder(right_wheel_port)
+        )
         BP.set_motor_limits(right_wheel_port, max_power_wheels, max_speed_wheels)
         BP.set_motor_power(right_wheel_port, 0)
 
@@ -129,7 +183,6 @@ if __name__ == '__main__':
         BP.set_motor_power(deployment_port, 0)
 
     except IOError as error:
-
         if debug:
             print("Motor initialization failed due to error : ", error)
         BP.reset_all()
@@ -138,9 +191,8 @@ if __name__ == '__main__':
     # wait for sensors to be ready
     wait_for_sensors(color_sensor_left, color_sensor_right)
 
-    while True: 
-        try: 
-
+    while True:
+        try:
             # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
             # time.sleep(1)
             # crossGreen(right_wheel, left_wheel, color_sensor_right, color_sensor_left, SPEED = -200, DELTA = -20)
@@ -165,10 +217,10 @@ if __name__ == '__main__':
             # state = "moving"
 
             # # now we are ready for the robot to move to the desired location
-            # for x,y in fire_coordinates: 
+            # for x,y in fire_coordinates:
 
             #     # move to fire
-            #     current_position, current_bearing = move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left); 
+            #     current_position, current_bearing = move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left);
             #     state = "selecting"
 
             #     # select fire suppressant
@@ -193,19 +245,3 @@ if __name__ == '__main__':
         except BaseException:
             BP.reset_all()  # reset all before exiting program
             exit()
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
