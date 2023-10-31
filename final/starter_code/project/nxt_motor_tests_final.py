@@ -1,4 +1,4 @@
-# import brickpi3
+import brickpi3
 from utils.brick import Motor
 
 BP = brickpi3.BrickPi3()

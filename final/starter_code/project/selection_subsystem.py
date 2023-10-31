@@ -18,16 +18,15 @@ def select_fire_suppressant(fire_type, selection_motor):
         None
 
     Mapping:
-        A - Blue
-        B - Yellow
-        C - Purple
-        D - Red
-        E - Orange
-        F - Green
+        D - Red - 0 or 360
+        E - Orange - 60
+        B - Yellow - 120
+        F - Green - 180
+        A - Blue - 240
+        C - Purple - 300
+
     """
 
-    return
+    current_position = 0
 
-
-def rotation(position):
-    print(position)
+    return color_position

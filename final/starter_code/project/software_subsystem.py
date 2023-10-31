@@ -1,5 +1,5 @@
 # Software Subsystem Code
-# Authors: Shidan Javaher, Alice Godbout
+# Authors: Shidan Javaheri, Alice Godbout
 
 # import statements
 from utils.brick import (
@@ -20,7 +20,7 @@ from deployment_subsystem import *
 # --------------------------------------
 
 # state of the city. Represented by 4 * 4 matrix of 0s.
-# fire code : Types A - F Represented by integeres 1 - 6
+# fire code : Types A - F Represented by integers 1 - 6
 debug = True
 city_state = [[0 for _ in range(4)] for _ in range(4)]
 current_bearing = 0
@@ -96,22 +96,34 @@ def get_user_input():
     )
 
     # split the input string at commas
-    fires = []
+    fire_list = []
     for i in range(0, len(fire_input.split(",")), 3):
-        fires.append(fire_input.split(",")[i : i + 3])
+        fire_list.append(fire_input.split(",")[i : i + 3])
 
     # convert letter (fire types) into integers
-    fire_coords = []
-    for fire in fires:
+    fire_coords = []  # list containing only location
+    fires = []  # list containing the location and types of fires
+    for fire in fire_list:
         x = int(fire[0])
         y = int(fire[1])
-        letter_as_integer = ord(fire[2].upper()) - ord("A") + 1
-        fire_coords.append((x, y, letter_as_integer))
+        fire_type = ord(fire[2].upper()) - ord("A") + 1
+        fire_coords.append((x, y))
+        fires.append((x, y, fire_type))
 
     # sort fires by increasing distance from (0,0)
     sorted_coords = sorted(fire_coords, key=lambda x: (x[0] ** 2 + x[1] ** 2) ** 0.5)
 
-    # print(sorted_coords)
+    # update city_map with fire types
+    for x, y, fire_type in fires:
+        city_state[x][y] = fire_type
+
+    # if debug == True:
+    #     print("fire list", fire_list)
+    #     print("fire coords", fire_coords)
+    #     print("fire location and types", fires)
+    #     print("sorted coords", sorted_coords)
+    #     print("city_state", city_state)
+
     return sorted_coords
 
 

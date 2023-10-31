@@ -1,7 +1,10 @@
-# import brickpi3
-# from project.utils.brick import Motor
+# Unit Tests for the Selection subsystem
+# Authors: Alice Godbout, Sara Andari
 
-# BP = brickpi3.BrickPi3()
+import brickpi3
+from project.utils.brick import Motor
+
+BP = brickpi3.BrickPi3()
 
 # initiate motors
 MOTOR = BP.PORT_A
