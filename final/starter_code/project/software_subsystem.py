@@ -95,6 +95,8 @@ def get_user_input():
         "Enter the fire coordinates (Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3): "
     )
 
+    # TODO : user input verification
+
     # split the input string at commas
     fire_list = []
     for i in range(0, len(fire_input.split(",")), 3):
