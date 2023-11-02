@@ -7,7 +7,7 @@ import time
 import brickpi3
 
 debug = True
-
+BP = brickpi3.BrickPi3()
 
 # Main Function for Selection Subsystem
 # --------------------------------

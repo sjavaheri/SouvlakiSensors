@@ -10,11 +10,12 @@ from utils.brick import (
     Motor,
 )
 import brickpi3
+import time
 
 # other subystem code
-from movement_subsystem import *
-from selection_subsystem import *
-from deployment_subsystem import *
+from movement import *
+from selection import *
+from deployment import *
 
 # Data Structures for Software Subsystem
 # --------------------------------------
@@ -22,7 +23,7 @@ from deployment_subsystem import *
 # state of the city. Represented by 4 * 4 matrix of 0s.
 # fire code : Types A - F Represented by integers 1 - 6
 debug = True
-city_state = [[0 for _ in range(4)] for _ in range(4)]
+city_map = [[0 for _ in range(4)] for _ in range(4)]
 current_bearing = 0
 current_position = (0, 0)
 state = ""
@@ -46,9 +47,6 @@ def wait_for_sensors(c1, c2):
     wait_ready_sensors()
     print("System Boot Successful. The Exterminator is ready to exterminnate!")
     return
-
-
-# TODO
 
 
 def display_loading_instructions():
@@ -117,7 +115,7 @@ def get_user_input():
 
     # update city_map with fire types
     for x, y, fire_type in fires:
-        city_state[x][y] = fire_type
+        city_map[x][y] = fire_type
 
     # if debug == True:
     #     print("fire list", fire_list)
@@ -142,7 +140,7 @@ if __name__ == "__main__":
     # color sensors
     # color sensor 39
     color_sensor_right = EV3ColorSensor(1)
-    color_sensor_left = EV3ColorSensor(2)
+    color_sensor_left = EV3ColorSensor(3)
 
     # Initialize Motors
     # -----------------
@@ -156,14 +154,14 @@ if __name__ == "__main__":
     right_wheel = Motor("B")
 
     max_power_wheels = 40
-    max_speed_wheels = 150
+    max_speed_wheels = 50
 
     # selection motor
     selection_port = BP.PORT_C
     selection_motor = Motor("C")
 
     max_power_select = 40
-    max_speed_select = 150
+    max_speed_select = 50
 
     # deployment motor
     deployment_port = BP.PORT_D
@@ -207,53 +205,63 @@ if __name__ == "__main__":
 
     while True:
         try:
+            # Tests
+
+            # # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # # time.sleep(1)
+            # # crossGreen(right_wheel, left_wheel, color_sensor_right, color_sensor_left, SPEED = -200, DELTA = -20)
+            # # time.sleep(1)
+            # # reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # turn_right(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
             # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # time.sleep(1)
-            # crossGreen(right_wheel, left_wheel, color_sensor_right, color_sensor_left, SPEED = -200, DELTA = -20)
-            # time.sleep(1)
-            # reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            time.sleep(1)
-            turn_blind(right_wheel, left_wheel)
-            time.sleep(1)
-            turn_blind(right_wheel, left_wheel)
-            time.sleep(1)
-            turn_blind(right_wheel, left_wheel)
-            time.sleep(1)
-            turn_blind(right_wheel, left_wheel)
-            break
+            # move_forward_blind(0.05,right_wheel, left_wheel)
+            # turn_blind(90,right_wheel, left_wheel)
+            # move_forward_blind(0.05,right_wheel, left_wheel)
+
+            # time.sleep(2)
+            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # turn_left(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
+            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # turn_right(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
+            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # turn_left(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
+            # BP.reset_all()  # reset all before exiting program
+            # break
             # state = "Loading"
             # # display loading instructions
             # display_loading_instructions()
             # state = "Inputting"
 
-            # # get user input to set fire locations
-            # fire_coordinates = get_user_input()
-            # state = "moving"
 
-            # # now we are ready for the robot to move to the desired location
-            # for x,y in fire_coordinates:
 
-            #     # move to fire
-            #     current_position, current_bearing = move_to_point(x, y, city_state, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left);
-            #     state = "selecting"
+            # get user input to set fire locations
+            fire_coordinates = get_user_input()
 
-            #     # select fire suppressant
-            #     select_fire_suppressant(city_state[x][y], selection_motor)
-            #     state = "deploying"
+            # now we are ready for the robot to move to the desired location
+            for x,y in fire_coordinates:
 
-            #     # deploy fire suppressant
-            #     deploy_fire(deployment_motor)
-            #     state = "reversing"
+                state = "moving"
+                # move to fire
+                current_position, current_bearing = move_to_point(x, y, city_map, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left);
+                state = "selecting"
 
-            #     # reverse
-            #     current_position = reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            #     state = "moving"
+                # select fire suppressant
+                select_fire_suppressant(city_map[x][y], selection_motor)
+                state = "deploying"
 
-            # # go home
-            # current_position, current_bearing = move_to_point(0, 0, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+                # deploy fire suppressant
+                deploy_fire(deployment_motor)
+                state = "reversing"
 
-            # # reorient to have forward facing bearing
-            # # use turn function
+                # reverse
+                current_position = reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+
+            # go home
+            current_position, current_bearing = move_to_point(0, 0, city_map, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+
+            # reorient to have forward facing bearing
+            # use turn function
 
         # capture all exceptions
         except BaseException:

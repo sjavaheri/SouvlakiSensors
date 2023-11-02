@@ -2,9 +2,9 @@
 # Authors: Shidan Javaheri, Alice Godbout
 
 # import statements
-from movement_subsystem import *
-from selection_subsystem import *
-from deployment_subsystem import *
+from movement import *
+from selection import *
+from deployment import *
 
 
 # Test Shortest Path Algorithm
