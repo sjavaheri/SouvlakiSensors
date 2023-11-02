@@ -3,7 +3,7 @@
 from collections import deque
 import math
 import time
-import brickpi3
+# import brickpi3
 import time
 
 # Data Structures for Movement Subsystem
@@ -18,7 +18,7 @@ colorTable40 = [[0.755809, 0.146725, 0.097466, "red"], [0.19179, 0.579413, 0.228
 
 # Global Variables for Movement Subsytem
 # --------------------------------------
-BP = brickpi3.BrickPi3()
+# BP = brickpi3.BrickPi3()
 SPEED = 200
 DELTA = 170
 WHEEL_DIAMETER = 0.043

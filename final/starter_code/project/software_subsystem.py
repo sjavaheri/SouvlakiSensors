@@ -203,41 +203,18 @@ if __name__ == "__main__":
     # wait for sensors to be ready
     wait_for_sensors(color_sensor_left, color_sensor_right)
 
+
     while True:
         try:
-            # Tests
 
-            # # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # # time.sleep(1)
-            # # crossGreen(right_wheel, left_wheel, color_sensor_right, color_sensor_left, SPEED = -200, DELTA = -20)
-            # # time.sleep(1)
-            # # reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # turn_right(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
-            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # move_forward_blind(0.05,right_wheel, left_wheel)
-            # turn_blind(90,right_wheel, left_wheel)
-            # move_forward_blind(0.05,right_wheel, left_wheel)
+            # display loading instructions
+            state = "loading"
+            display_loading_instructions()
 
-            # time.sleep(2)
-            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # turn_left(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
-            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # turn_right(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
-            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # turn_left(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
-            # BP.reset_all()  # reset all before exiting program
-            # break
-            # state = "Loading"
-            # # display loading instructions
-            # display_loading_instructions()
-            # state = "Inputting"
-
-
-
-            # get user input to set fire locations
+            # get user input
+            state = "inputting"
             fire_coordinates = get_user_input()
-
+  
             # now we are ready for the robot to move to the desired location
             for x,y in fire_coordinates:
 
