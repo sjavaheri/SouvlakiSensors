@@ -79,10 +79,9 @@ def display_loading_instructions():
 def get_user_input():
     """
     Gets the user input for the fire coordinates
-    Convert coordinates into proper coordinates for array
-    User will input (x,y). We will not adjust the values
-
-    Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3
+    Convert coordinates into proper coordinates for array ( (x,y) --> (3-y, x) )
+    User will input (x,y,FIRE).
+        Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3
 
     Returns:
         list : a list of tuples representing the fire coordinates, in order of increasing distance from the starting position 0,0
@@ -104,8 +103,9 @@ def get_user_input():
     fire_coords = []  # list containing only location
     fires = []  # list containing the location and types of fires
     for fire in fire_list:
-        x = int(fire[0])
-        y = int(fire[1])
+        # convert coordinates into proper coordinates for array
+        x = 3 - int(fire[1])
+        y = int(fire[0])
         fire_type = ord(fire[2].upper()) - ord("A") + 1
         fire_coords.append((x, y))
         fires.append((x, y, fire_type))
@@ -116,13 +116,6 @@ def get_user_input():
     # update city_map with fire types
     for x, y, fire_type in fires:
         city_map[x][y] = fire_type
-
-    # if debug == True:
-    #     print("fire list", fire_list)
-    #     print("fire coords", fire_coords)
-    #     print("fire location and types", fires)
-    #     print("sorted coords", sorted_coords)
-    #     print("city_state", city_state)
 
     return sorted_coords
 
@@ -203,10 +196,8 @@ if __name__ == "__main__":
     # wait for sensors to be ready
     wait_for_sensors(color_sensor_left, color_sensor_right)
 
-
     while True:
         try:
-
             # display loading instructions
             state = "loading"
             display_loading_instructions()
@@ -214,13 +205,22 @@ if __name__ == "__main__":
             # get user input
             state = "inputting"
             fire_coordinates = get_user_input()
-  
-            # now we are ready for the robot to move to the desired location
-            for x,y in fire_coordinates:
 
+            # now we are ready for the robot to move to the desired location
+            for x, y in fire_coordinates:
                 state = "moving"
                 # move to fire
-                current_position, current_bearing = move_to_point(x, y, city_map, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left);
+                current_position, current_bearing = move_to_point(
+                    x,
+                    y,
+                    city_map,
+                    current_position,
+                    current_bearing,
+                    left_wheel,
+                    right_wheel,
+                    color_sensor_right,
+                    color_sensor_left,
+                )
                 state = "selecting"
 
                 # select fire suppressant
@@ -232,10 +232,22 @@ if __name__ == "__main__":
                 state = "reversing"
 
                 # reverse
-                current_position = reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+                current_position = reverse(
+                    right_wheel, left_wheel, color_sensor_right, color_sensor_left
+                )
 
             # go home
-            current_position, current_bearing = move_to_point(0, 0, city_map, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            current_position, current_bearing = move_to_point(
+                0,
+                0,
+                city_map,
+                current_position,
+                current_bearing,
+                right_wheel,
+                left_wheel,
+                color_sensor_right,
+                color_sensor_left,
+            )
 
             # reorient to have forward facing bearing
             # use turn function
