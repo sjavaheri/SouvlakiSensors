@@ -11,7 +11,7 @@ BP = brickpi3.BrickPi3()
 
 # Main Function for Selection Subsystem
 # --------------------------------
-def select_fire_suppressant(fire_type, selection_motor):
+def select_fire_suppressant(fire_type, selection_motor, selection_port):
     """
     Based on the type of fire at this location, select the appropriate fire suppressant
 
@@ -25,30 +25,30 @@ def select_fire_suppressant(fire_type, selection_motor):
     Mapping:
         Letter  Color    Integer     Position
         D       Red      4           0
-        E       Orange   5           60
-        B       Yellow   2           120
+        E       Orange   5           300
+        B       Yellow   2           240
         F       Green    6           180
-        A       Blue     1           240
-        C       Purple   3           300
+        A       Blue     1           120
+        C       Purple   3           60
 
     """
     time.sleep(4)
     # check / test if it is better to get position with get_motor_encoder or by updating current position variable
-    # absolutePosition = BP.get_motor_encoder(selection_motor)
-    # current_position = absolutePosition % 360
+    absolutePosition = BP.get_motor_encoder(selection_port)
+    current_position = absolutePosition % 360
 
-    # mapping = {1: 240, 2: 120, 3: 300, 4: 0, 5: 60, 6: 180}
+    mapping = {1: 120, 2: 240, 3: 60, 4: 0, 5: 300, 6: 180}
 
-    # desired_position = mapping[fire_type]
+    desired_position = mapping[fire_type]
 
-    # # relative move required
-    # relative_move = (desired_position - current_position) % 360
+    # relative move required
+    relative_move = (desired_position - current_position) % 360
 
-    # # if relative move is greater than 180, move counterclockwise
-    # if relative_move > 180:
-    #     relative_move -= 360
+    # if relative move is greater than 180, move counterclockwise
+    if relative_move > 180:
+        relative_move -= 360
 
-    # # set motor to new relative position
-    # selection_motor.set_position_relative(relative_move)
+    # set motor to new relative position
+    selection_motor.set_position_relative(relative_move)
 
     return
