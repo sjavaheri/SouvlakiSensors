@@ -124,34 +124,37 @@ if __name__ == "__main__":
     # wait for sensors to be ready
     wait_for_sensors(color_sensor_left, color_sensor_right)
     count = 0
-    while True:
-        
+    
+    while True:    
         try:
 
             # Test 1 - Right Squares - Succeeds
 
+            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # move_forward_blind(0.05,right_wheel, left_wheel)
+            # turn_blind(90,right_wheel, left_wheel)
+            # move_forward_blind(0.03,right_wheel, left_wheel)
+            # count += 1
+
+            # Test 2 - Left Squares - Succeeds
+            
+            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            # move_forward_blind(0.05,right_wheel, left_wheel)
+            # turn_blind(-90,right_wheel, left_wheel)
+            # move_forward_blind(0.03,right_wheel, left_wheel)
+            # count += 1
+
+
+            # Test 3 - Reverse - Succeeds
+
             move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            turn_right(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
-            cross_green(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            move_backward_blind(0.05,right_wheel, left_wheel)
+            reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+            turn_blind(174,right_wheel, left_wheel)
             count += 1
 
 
-            # Test 2 - Left Squares - Succeeds
-
-            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # cross_green(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # turn_left(right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
-            # count += 1
-
-            # Test 3 - Reverse - Fails (DO NOT DO THIS)
-
-            # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # cross_green_reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # cross_green(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-            # count += 1
-
-            if (count > 10): 
+            if (count > 10 ): 
                 BP.reset_all()
                 break
 

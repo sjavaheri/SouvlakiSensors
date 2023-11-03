@@ -52,7 +52,7 @@ def test_shortest_path1():
     Test for graph 1
     """
 
-    start_x, start_y = 0,0
+    start_x, start_y = 3,0
     target_x, target_y = 1, 3
 
     print("Results from Test 1: " + str(check_results1(start_x, start_y, target_x, target_y)))

@@ -1,6 +1,6 @@
 # Deployment Subsystem Code
 # Authors: Shidan Javaheri, Alice Godbout
-
+import time
 
 
 # Main Function for Deployment Subsystem
@@ -16,5 +16,6 @@ def deploy_fire(deployment_motor):
     Returns: 
         None
     """
-    deployment_motor.set_position_relative(360)
+    time.sleep(4)
+    # deployment_motor.set_position_relative(360)
     return

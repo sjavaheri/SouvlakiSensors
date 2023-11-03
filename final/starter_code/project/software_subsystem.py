@@ -25,7 +25,7 @@ from deployment import *
 debug = True
 city_map = [[0 for _ in range(4)] for _ in range(4)]
 current_bearing = 0
-current_position = (0, 0)
+current_position = (3, 0)
 state = ""
 
 
@@ -54,34 +54,40 @@ def display_loading_instructions():
     Displays instructions for how to load the robot. Asks user to enter yes when loading is complete
     """
     # display instructions
-    response = input(
-        "Dear external robot operator, please follow the following instructions to load our robot. Do you confirm you want to continue?"
-    )
-
-    if "yes" in response.lower() or "y" == response.lower():
-        print("Place cubes according to the color displayed on the cardboard.")
-        confirmation = "Once you've finished loading the robot, please confirm below."
-
-        # ask the user to enter 'yes' once loading is complete
-        loading_response = ""
-        while loading_response.lower() != "yes" and loading_response.lower() != "y":
-            loading_response = input("Enter 'yes' or 'y' when loading is complete: ")
-
-        print("Robot loading confirmed. Proceed to the next step.")
-    else:
-        print(
-            "Loading instructions not displayed. Please confirm if you want to proceed."
+    while response.lower() != "yes" and response.lower() != "y":
+        response = input(
+            "Dear external robot operator, please follow the following instructions to load our robot. Do you confirm you want to continue?"
         )
+        
+        if (response != "yes" and response != "y"):
+            print("Invalid Input")
+
+    print("Place cubes according to the color displayed on the cardboard.")
+    confirmation = "Once you've finished loading the robot, please confirm below:"
+    print(confirmation)
+    
+    # ask the user to enter 'yes' once loading is complete
+    loading_response = ""
+    while loading_response.lower() != "yes" and loading_response.lower() != "y":
+        loading_response = input("Enter 'yes' or 'y' when loading is complete: ")
+        
+        if (loading_response != "yes" and loading_response != "y"):
+            print("Invalid Input")
+
     print("Robot loading confirmed. Proceed to the next step.")
-    return
+    return 
+
 
 
 def get_user_input():
     """
     Gets the user input for the fire coordinates
-    Convert coordinates into proper coordinates for array ( (x,y) --> (3-y, x) )
-    User will input (x,y,FIRE).
-        Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3
+    Convert coordinates into proper coordinates for array
+    
+    User will input (x,y). We will convert them to coordinates on the array 
+    (x,y) -> (3-y, x)
+
+    Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3
 
     Returns:
         list : a list of tuples representing the fire coordinates, in order of increasing distance from the starting position 0,0
@@ -207,20 +213,10 @@ if __name__ == "__main__":
             fire_coordinates = get_user_input()
 
             # now we are ready for the robot to move to the desired location
-            for x, y in fire_coordinates:
+            for point in fire_coordinates:
                 state = "moving"
                 # move to fire
-                current_position, current_bearing = move_to_point(
-                    x,
-                    y,
-                    city_map,
-                    current_position,
-                    current_bearing,
-                    left_wheel,
-                    right_wheel,
-                    color_sensor_right,
-                    color_sensor_left,
-                )
+                current_position, current_bearing, reverse_point = move_to_point(point,city_map, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left);
                 state = "selecting"
 
                 # select fire suppressant
@@ -232,9 +228,12 @@ if __name__ == "__main__":
                 state = "reversing"
 
                 # reverse
-                current_position = reverse(
+                reverse(
                     right_wheel, left_wheel, color_sensor_right, color_sensor_left
                 )
+                # robot turned around
+                current_position = reverse_point
+                current_bearing = (current_bearing + 180) % 360
 
             # go home
             current_position, current_bearing = move_to_point(

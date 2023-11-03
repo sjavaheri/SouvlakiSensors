@@ -3,7 +3,7 @@
 from collections import deque
 import math
 import time
-# import brickpi3
+import brickpi3
 import time
 
 # Data Structures for Movement Subsystem
@@ -18,9 +18,9 @@ colorTable40 = [[0.755809, 0.146725, 0.097466, "red"], [0.19179, 0.579413, 0.228
 
 # Global Variables for Movement Subsytem
 # --------------------------------------
-# BP = brickpi3.BrickPi3()
+BP = brickpi3.BrickPi3()
 SPEED = 200
-DELTA = 170
+DELTA = 160
 WHEEL_DIAMETER = 0.043
 AXLE_LENGTH = 0.17
 ORIENT_TO_DEG = AXLE_LENGTH/WHEEL_DIAMETER
@@ -34,13 +34,12 @@ debug = True
 # --------------------------------
 # TODO: After Unit Testing
 
-def move_to_point(x, y, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left): 
+def move_to_point(point, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left): 
     """
     Moves the robot to a point on the city grid, so that it can deploy the fire suppressant
 
     Args: 
-        x (int): x coordinate of destination
-        y (int): y coordinate of destination
+        point (tuple): point on the city grid to move to
         city_state (list): 4x4 matrix representing the city
         current_position (tuple): current position of the robot
         current_bearing (int): current bearing of the robot
@@ -53,7 +52,104 @@ def move_to_point(x, y, city_state, current_position, current_bearing, right_whe
         tuple: current position of the robot
         int: current bearing of the robot
     """
+    # indexes to the array
+    x, y = current_position
+    end_x, end_y = point
+    
+    # get the path to the point
+    path = shortest_path(city_state, x, y, end_x, end_y)
+    if debug: 
+        print("The path is: ", path)
+    
+    last_point = False
+    # move to each point in the path
+    for next_x, next_y in path: 
+        
+        if (next_x, next_y) == (end_x, end_y):
+            last_point = True
+        if debug: 
+            print("Moving to point: ", x, y)
+            
+        # move to the next point
+        # find if I need to turn left or right - (DX AND DY SWAPPED to due array - map relation)
+        dx = next_y - y
+        dy = next_x - x
+        
+        # Cover all possibilities of movement
+        
+        # move right along x
+        if (dx == 1 and dy == 0):       
+            # check current bearing
+            if (current_bearing == 0):
+                turn_blind(90, right_wheel, left_wheel)
+            elif (current_bearing == 180): 
+                turn_blind(-90, right_wheel, left_wheel)
+            elif (current_bearing == 270):
+                turn_blind(175, right_wheel, left_wheel)
+            current_bearing = 90
+
+        # move left along x
+        if (dx == -1 and dy == 0):
+            if (current_bearing == 0):
+                turn_blind(-90, right_wheel, left_wheel)
+            elif (current_bearing == 90): 
+                turn_blind(175, right_wheel, left_wheel)
+            elif (current_bearing == 180):
+                turn_blind(90, right_wheel, left_wheel)
+            current_bearing = 270
+
+        # move up along y
+        if (dx == 0 and dy == 1):
+            if (current_bearing == 90):
+                turn_blind(-90, right_wheel, left_wheel)
+            elif (current_bearing == 180): 
+                turn_blind(175, right_wheel, left_wheel)
+            elif (current_bearing == 270):
+                turn_blind(90, right_wheel, left_wheel)
+            current_bearing = 0
+
+        
+        # move down along y
+        if (dx == 0 and dy == -1):
+            if (current_bearing == 0):
+                turn_blind(175, right_wheel, left_wheel)
+            elif (current_bearing == 90): 
+                turn_blind(90, right_wheel, left_wheel)
+            elif (current_bearing == 270):
+                turn_blind(-90, right_wheel, left_wheel)
+            current_bearing = 180
+        
+        # move forward
+        move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+        if (not last_point): 
+            # adjust for next turn
+            move_forward_blind(0.05, right_wheel, left_wheel)
+        
+        # reverse to get chute in good position
+        if (last_point):
+            move_backward_blind(0.05,right_wheel, left_wheel)
+    # return current position and bearing, and second last element in path
+    return (end_x, end_y), current_bearing, path[-1]
+            
+        
+            
+            
+                
+                
+                
+
+
+            
+        
+        
+        
+        
+        
+        
+        
+    
     return
+
 
 # Guided Functions
 # --------------------------------
@@ -118,7 +214,17 @@ def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, 
 
         time.sleep(SAMPLING_RATE)
 
-def reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left):
+def reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left): 
+    """
+    Reverse after a cube has been deployed to the previous intersection
+    """
+    move_backward_blind(0.05, right_wheel, left_wheel)
+    reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+    turn_blind(175, right_wheel, left_wheel)
+    move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+    move_forward_blind(0.05, right_wheel, left_wheel)
+
+def reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left):
     """
     Reverse the robot briefly, while correcting its trajectory
 
@@ -142,7 +248,7 @@ def reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left):
     start = 0
     while True: 
         start += 1
-        if (start > 30): 
+        if (start > 20): 
             return
         # get the readings of the two color sensors
         rr,gr,br = color_sensor_right.get_rgb()
@@ -334,6 +440,8 @@ def turn_right(right_wheel, left_wheel, color_sensor_right, color_sensor_left, S
     Returns:
         None
     """
+    
+    right_wheel.set_dps(-SPEED)
     while True: 
         
         # get the readings of the left color sensors
@@ -341,9 +449,7 @@ def turn_right(right_wheel, left_wheel, color_sensor_right, color_sensor_left, S
         color_right = classifyColor(39, rr, gr, br) 
 
         # turn to get left sensor off green
-        if (color_right == "green"): 
-            right_wheel.set_dps(-SPEED)
-        else: 
+        if (color_right != "green"):  
             right_wheel.set_dps(0)
             break
         time.sleep(SAMPLING_RATE)
@@ -424,8 +530,6 @@ def move_forward_blind(distance, right_wheel, left_wheel,SPEED=SPEED):
     """
     left_wheel.set_dps(SPEED)
     right_wheel.set_dps(SPEED)
-    left_wheel.set_dps(SPEED)
-    right_wheel.set_dps(SPEED)
     left_wheel.set_position_relative(int(distance * DIST_TO_DEG))
     right_wheel.set_position_relative(int(distance * DIST_TO_DEG))
     wait_for_motor(right_wheel)
@@ -444,8 +548,8 @@ def turn_blind(angle, right_wheel, left_wheel):
     """
     left_wheel.set_dps(SPEED)
     right_wheel.set_dps(SPEED)
-    left_wheel.set_position_relative(int(angle*0.88 * ORIENT_TO_DEG))
-    right_wheel.set_position_relative(-int(angle *0.88*ORIENT_TO_DEG))
+    left_wheel.set_position_relative(int(angle*0.96* ORIENT_TO_DEG))
+    right_wheel.set_position_relative(-int(angle *0.96*ORIENT_TO_DEG))
     wait_for_motor(right_wheel)
 
 
