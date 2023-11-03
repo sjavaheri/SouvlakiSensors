@@ -54,27 +54,24 @@ def display_loading_instructions():
     Displays instructions for how to load the robot. Asks user to enter yes when loading is complete
     """
     # display instructions
+    response = ""
     while response.lower() != "yes" and response.lower() != "y":
-        response = input(
-            "Dear external robot operator, please follow the following instructions to load our robot. Do you confirm you want to continue?"
-        )
+        response = input("\nWelcome! Please follow the following instructions to load our robot. \nDo you confirm you want to continue? ")
         
         if (response != "yes" and response != "y"):
-            print("Invalid Input")
+            print("Invalid Input\n")
 
-    print("Place cubes according to the color displayed on the cardboard.")
-    confirmation = "Once you've finished loading the robot, please confirm below:"
-    print(confirmation)
+    print("\nPlace cubes according to the color displayed on the cardboard.\n")
     
     # ask the user to enter 'yes' once loading is complete
     loading_response = ""
     while loading_response.lower() != "yes" and loading_response.lower() != "y":
-        loading_response = input("Enter 'yes' or 'y' when loading is complete: ")
+        loading_response = input("\nEnter 'yes' or 'y' when loading is complete: ")
         
         if (loading_response != "yes" and loading_response != "y"):
             print("Invalid Input")
 
-    print("Robot loading confirmed. Proceed to the next step.")
+    print("\nRobot loading confirmed. Proceed to the next step.")
     return 
 
 
@@ -95,7 +92,7 @@ def get_user_input():
     """
 
     fire_input = input(
-        "Enter the fire coordinates (Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3): "
+        "\nEnter the fire coordinates (Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3): "
     )
 
     # TODO : user input verification
@@ -117,7 +114,7 @@ def get_user_input():
         fires.append((x, y, fire_type))
 
     # sort fires by increasing distance from (0,0)
-    sorted_coords = sorted(fire_coords, key=lambda x: (x[0] ** 2 + x[1] ** 2) ** 0.5)
+    sorted_coords = sorted(fire_coords, key=lambda x: ((x[0] - 3) ** 2 + x[1] ** 2) ** 0.5)
 
     # update city_map with fire types
     for x, y, fire_type in fires:
@@ -130,107 +127,117 @@ if __name__ == "__main__":
     """
     Main function of the softawre subsystem
     """
-    # brick pi instance
-    BP = brickpi3.BrickPi3()
+    # # brick pi instance
+    # BP = brickpi3.BrickPi3()
 
-    # Initialize Input Sensors
-    # ------------------------
+    # # Initialize Input Sensors
+    # # ------------------------
 
-    # color sensors
-    # color sensor 39
-    color_sensor_right = EV3ColorSensor(1)
-    color_sensor_left = EV3ColorSensor(3)
+    # # color sensors
+    # # color sensor 39
+    # color_sensor_right = EV3ColorSensor(1)
+    # color_sensor_left = EV3ColorSensor(3)
 
-    # Initialize Motors
-    # -----------------
+    # # Initialize Motors
+    # # -----------------
 
-    # left wheel
-    left_wheel_port = BP.PORT_A
-    left_wheel = Motor("A")
+    # # left wheel
+    # left_wheel_port = BP.PORT_A
+    # left_wheel = Motor("A")
 
-    # right wheel
-    right_wheel_port = BP.PORT_B
-    right_wheel = Motor("B")
+    # # right wheel
+    # right_wheel_port = BP.PORT_B
+    # right_wheel = Motor("B")
 
-    max_power_wheels = 40
-    max_speed_wheels = 50
+    # max_power_wheels = 40
+    # max_speed_wheels = 50
 
-    # selection motor
-    selection_port = BP.PORT_C
-    selection_motor = Motor("C")
+    # # selection motor
+    # selection_port = BP.PORT_C
+    # selection_motor = Motor("C")
 
-    max_power_select = 40
-    max_speed_select = 50
+    # max_power_select = 40
+    # max_speed_select = 50
 
-    # deployment motor
-    deployment_port = BP.PORT_D
-    deployment_motor = Motor("D")
+    # # deployment motor
+    # deployment_port = BP.PORT_D
+    # deployment_motor = Motor("D")
 
-    max_power_deploy = 40
-    max_speed_deploy = 150
+    # max_power_deploy = 40
+    # max_speed_deploy = 150
 
-    # setup all motors
-    try:
-        # left_wheel_motor
-        BP.offset_motor_encoder(left_wheel_port, BP.get_motor_encoder(left_wheel_port))
-        BP.set_motor_limits(left_wheel_port, max_power_wheels, max_speed_wheels)
-        BP.set_motor_power(left_wheel_port, 0)
+    # # setup all motors
+    # try:
+    #     # left_wheel_motor
+    #     BP.offset_motor_encoder(left_wheel_port, BP.get_motor_encoder(left_wheel_port))
+    #     BP.set_motor_limits(left_wheel_port, max_power_wheels, max_speed_wheels)
+    #     BP.set_motor_power(left_wheel_port, 0)
 
-        # right_wheel_motor
-        BP.offset_motor_encoder(
-            right_wheel_port, BP.get_motor_encoder(right_wheel_port)
-        )
-        BP.set_motor_limits(right_wheel_port, max_power_wheels, max_speed_wheels)
-        BP.set_motor_power(right_wheel_port, 0)
+    #     # right_wheel_motor
+    #     BP.offset_motor_encoder(
+    #         right_wheel_port, BP.get_motor_encoder(right_wheel_port)
+    #     )
+    #     BP.set_motor_limits(right_wheel_port, max_power_wheels, max_speed_wheels)
+    #     BP.set_motor_power(right_wheel_port, 0)
 
-        # selection_motor
-        BP.offset_motor_encoder(selection_port, BP.get_motor_encoder(selection_port))
-        BP.set_motor_limits(selection_port, max_power_select, max_speed_select)
-        BP.set_motor_power(selection_port, 0)
+    #     # selection_motor
+    #     BP.offset_motor_encoder(selection_port, BP.get_motor_encoder(selection_port))
+    #     BP.set_motor_limits(selection_port, max_power_select, max_speed_select)
+    #     BP.set_motor_power(selection_port, 0)
 
-        # deployment_motor
-        BP.offset_motor_encoder(deployment_port, BP.get_motor_encoder(deployment_port))
-        BP.set_motor_limits(deployment_port, max_power_deploy, max_speed_deploy)
-        BP.set_motor_power(deployment_port, 0)
+    #     # deployment_motor
+    #     BP.offset_motor_encoder(deployment_port, BP.get_motor_encoder(deployment_port))
+    #     BP.set_motor_limits(deployment_port, max_power_deploy, max_speed_deploy)
+    #     BP.set_motor_power(deployment_port, 0)
 
-    except IOError as error:
-        if debug:
-            print("Motor initialization failed due to error : ", error)
-        BP.reset_all()
-        exit()
+    # except IOError as error:
+    #     if debug:
+    #         print("Motor initialization failed due to error : ", error)
+    #     BP.reset_all()
+    #     exit()
 
-    # wait for sensors to be ready
-    wait_for_sensors(color_sensor_left, color_sensor_right)
+    # # wait for sensors to be ready
+    # wait_for_sensors(color_sensor_left, color_sensor_right)
 
     while True:
         try:
             # display loading instructions
             state = "loading"
+            if debug: 
+                print(state)
             display_loading_instructions()
 
             # get user input
             state = "inputting"
             fire_coordinates = get_user_input()
+            print (fire_coordinates)
+            print(city_map)
 
             # now we are ready for the robot to move to the desired location
             for point in fire_coordinates:
                 state = "moving"
+                if debug: 
+                    print(state)
                 # move to fire
                 current_position, current_bearing, reverse_point = move_to_point(point,city_map, current_position, current_bearing, left_wheel, right_wheel, color_sensor_right, color_sensor_left);
                 state = "selecting"
+                if debug: 
+                    print(state)
 
                 # select fire suppressant
                 select_fire_suppressant(city_map[x][y], selection_motor)
                 state = "deploying"
+                if debug: 
+                    print(state)
 
                 # deploy fire suppressant
                 deploy_fire(deployment_motor)
                 state = "reversing"
+                if debug: 
+                    print(state)
 
                 # reverse
-                reverse(
-                    right_wheel, left_wheel, color_sensor_right, color_sensor_left
-                )
+                reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
                 # robot turned around
                 current_position = reverse_point
                 current_bearing = (current_bearing + 180) % 360
