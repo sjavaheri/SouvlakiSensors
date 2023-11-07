@@ -4,8 +4,7 @@ from collections import deque
 import math
 import time
 import brickpi3
-import time
-
+debug = True
 # Data Structures for Movement Subsystem
 # --------------------------------------
 
@@ -25,6 +24,7 @@ WHEEL_DIAMETER = 0.043
 AXLE_LENGTH = 0.17
 ORIENT_TO_DEG = AXLE_LENGTH/WHEEL_DIAMETER
 DIST_TO_DEG = 180 / (math.pi * (WHEEL_DIAMETER/2))
+DEG_TO_DIST = (math.pi * (WHEEL_DIAMETER / 2))/180
 SAMPLING_RATE = 0.05
 TURN_SPEED = 200
 debug = True
@@ -34,7 +34,7 @@ debug = True
 # --------------------------------
 # TODO: After Unit Testing
 
-def move_to_point(point, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left): 
+def move_to_point(point, city_state, current_position, current_bearing, right_wheel, left_wheel, color_sensor_right, color_sensor_left, home = False): 
     """
     Moves the robot to a point on the city grid, so that it can deploy the fire suppressant
 
@@ -53,7 +53,9 @@ def move_to_point(point, city_state, current_position, current_bearing, right_wh
         int: current bearing of the robot
     """
     # indexes to the array
+    start_x, start_y = current_position
     x, y = current_position
+    print("Pring: ", current_position)
     end_x, end_y = point
     
     # get the path to the point
@@ -68,68 +70,90 @@ def move_to_point(point, city_state, current_position, current_bearing, right_wh
         if (next_x, next_y) == (end_x, end_y):
             last_point = True
         if debug: 
-            print("Moving to point: ", x, y)
+            print("Moving to point: ", next_x, next_y)
+            print("Current Bearing: ", current_bearing)
             
         # move to the next point
         # find if I need to turn left or right - (DX AND DY SWAPPED to due array - map relation)
         dx = next_y - y
-        dy = next_x - x
+        dy = x - next_x
         
+        if debug: 
+            print("Change dx, dy: " + str(dx) + ", " +  str(dy))
         # Cover all possibilities of movement
         
         # move right along x
         if (dx == 1 and dy == 0):       
             # check current bearing
             if (current_bearing == 0):
+                print("potato")
                 turn_blind(90, right_wheel, left_wheel)
             elif (current_bearing == 180): 
                 turn_blind(-90, right_wheel, left_wheel)
             elif (current_bearing == 270):
-                turn_blind(175, right_wheel, left_wheel)
+                turn_blind(180, right_wheel, left_wheel)
             current_bearing = 90
 
         # move left along x
-        if (dx == -1 and dy == 0):
+        elif (dx == -1 and dy == 0):
             if (current_bearing == 0):
                 turn_blind(-90, right_wheel, left_wheel)
             elif (current_bearing == 90): 
-                turn_blind(175, right_wheel, left_wheel)
+                turn_blind(180, right_wheel, left_wheel)
             elif (current_bearing == 180):
+                print("hellllooooo")
                 turn_blind(90, right_wheel, left_wheel)
             current_bearing = 270
 
         # move up along y
-        if (dx == 0 and dy == 1):
+        elif (dx == 0 and dy == 1):
             if (current_bearing == 90):
                 turn_blind(-90, right_wheel, left_wheel)
             elif (current_bearing == 180): 
-                turn_blind(175, right_wheel, left_wheel)
+                turn_blind(180, right_wheel, left_wheel)
             elif (current_bearing == 270):
                 turn_blind(90, right_wheel, left_wheel)
             current_bearing = 0
 
         
         # move down along y
-        if (dx == 0 and dy == -1):
+        elif (dx == 0 and dy == -1):
             if (current_bearing == 0):
-                turn_blind(175, right_wheel, left_wheel)
+                turn_blind(180, right_wheel, left_wheel)
             elif (current_bearing == 90): 
                 turn_blind(90, right_wheel, left_wheel)
             elif (current_bearing == 270):
                 turn_blind(-90, right_wheel, left_wheel)
             current_bearing = 180
-        
-        # move forward
+            
+        print("New current bearing: ", current_bearing)
+        # move forward off green
+        move_forward_blind(0.05, right_wheel, left_wheel)
+        # move forward to next green
         move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
         if (not last_point): 
             # adjust for next turn
             move_forward_blind(0.05, right_wheel, left_wheel)
         
         # reverse to get chute in good position
-        if (last_point):
-            move_backward_blind(0.05,right_wheel, left_wheel)
+        if (last_point and not home):
+            move_backward_blind(0.03,right_wheel, left_wheel)
+        
+        if (last_point and home): 
+            move_forward_blind(0.05,right_wheel, left_wheel)
+            
+        # adjust current point 
+        x, y = next_x, next_y
+        
+    
     # return current position and bearing, and second last element in path
-    return (end_x, end_y), current_bearing, path[-1]
+    last_point
+    if (len(path)>1): 
+        last_point = path[-2]
+    else: 
+        last_point = (start_x, start_y)
+    
+    return (end_x, end_y), current_bearing, last_point
             
         
             
@@ -178,8 +202,8 @@ def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, 
         color_right = classifyColor(39, rr, gr, br)
         color_left = classifyColor(40, rl, gl, bl)
 
-        if debug: 
-            print("Left Color: ", color_left, "Right Color: ", color_right)
+        # if debug: 
+        #     print("Left Color: ", color_left, "Right Color: ", color_right)
 
         # check if destination is reached
         if (color_right == "green" and color_left == "green"): 
@@ -196,8 +220,72 @@ def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, 
             error = "right"
         else:
             error = "none"
-        if debug: 
-            print("The current error is: ", error)
+        # if debug: 
+        #     print("The current error is: ", error)
+        
+        # adjust the motors based on the error
+
+        # if error is to the left, turn right
+        if (error == "left"): 
+            left_wheel.set_dps(SPEED - (DELTA))
+            right_wheel.set_dps(SPEED + DELTA)
+        elif (error == "right"): 
+            left_wheel. set_dps(SPEED + DELTA)
+            right_wheel.set_dps(SPEED - (DELTA))
+        else:
+            left_wheel.set_dps(SPEED)
+            right_wheel.set_dps(SPEED)
+
+        time.sleep(SAMPLING_RATE)
+
+def move_forward_short(distance, right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA): 
+    """
+    Move robot forward guided by sensors until time finishes
+
+    Error: if any color sensor reads red or blue
+
+    Args: 
+        right_wheel (Motor): right wheel motor
+        left_wheel (Motor): left wheel motor
+        color_sensor_right (ColorSensor): color sensor 39
+        color_sensor_left (ColorSensor): color sensor 40
+    
+    Returns:
+        None
+    """
+    # loop until destination reached
+    print("here")
+    # get the port of the left motor
+    initial_rotation = BP.get_motor_encoder(BP.PORT_A)
+    print(initial_rotation)
+    while True: 
+        
+        # get the readings of the two color sensors
+        rr,gr,br = color_sensor_right.get_rgb()
+        rl,gl,bl = color_sensor_left.get_rgb()
+        color_right = classifyColor(39, rr, gr, br)
+        color_left = classifyColor(40, rl, gl, bl)
+
+        # if debug: 
+        #     print("Left Color: ", color_left, "Right Color: ", color_right)
+
+        # check if distance is reached
+        print(distance * DIST_TO_DEG)
+        if (BP.get_motor_encoder(BP.PORT_A) - initial_rotation > distance * DIST_TO_DEG): 
+            left_wheel.set_dps(0)
+            right_wheel.set_dps(0)
+            return
+        
+        # determine if the error is to the left or right 
+        error = "none"
+        if (color_left == "red" or color_left == "blue"): 
+            error = "left"
+        elif (color_right == "red" or color_right == "blue"):
+            error = "right"
+        else:
+            error = "none"
+        # if debug: 
+        #     print("The current error is: ", error)
         
         # adjust the motors based on the error
 
@@ -213,16 +301,20 @@ def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, 
             right_wheel.set_dps(SPEED)
 
         time.sleep(SAMPLING_RATE)
-
+        
 def reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left): 
     """
     Reverse after a cube has been deployed to the previous intersection
     """
-    move_backward_blind(0.05, right_wheel, left_wheel)
-    reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-    turn_blind(175, right_wheel, left_wheel)
-    move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-    move_forward_blind(0.05, right_wheel, left_wheel)
+    move_backward_blind(0.245, right_wheel, left_wheel)
+    # move_forward_short(0.20, right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
+    # move_backward_blind(0.15, right_wheel, left_wheel)
+    # move_forward_short(0.15, right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
+    # move_backward_blind(0.225, right_wheel, left_wheel)
+    # reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+    # turn_blind(180, right_wheel, left_wheel)
+    # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+    # move_forward_blind(0.05, right_wheel, left_wheel)
 
 def reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left):
     """
@@ -248,7 +340,7 @@ def reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_lef
     start = 0
     while True: 
         start += 1
-        if (start > 20): 
+        if (start > 15): 
             return
         # get the readings of the two color sensors
         rr,gr,br = color_sensor_right.get_rgb()
@@ -282,11 +374,11 @@ def reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_lef
         # adjust the motors based on the error
 
         # if error is to the left, turn right
-        if (error == "left" and count < 5): 
+        if (error == "left" and count < 3): 
             left_wheel.set_dps(-SPEED + DELTA)
             right_wheel.set_dps(-SPEED - DELTA)
             
-        elif (error == "right" and count < 5): 
+        elif (error == "right" and count < 3): 
             left_wheel. set_dps(-SPEED - DELTA)
             right_wheel.set_dps(-SPEED + DELTA)
         

@@ -21,6 +21,12 @@ test_graph2 = [
         [0, 1, 0, 0]
     ]
 
+test_graph3 = [
+        [4, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+    ]
 
 def check_results1(start_x, start_y, target_x, target_y, test_graph=test_graph1):
     """
@@ -86,7 +92,16 @@ def test_shortest_path2():
 
     print("Results from Test 3: " + str(check_results1(start_x, start_y, target_x, target_y, test_graph=test_graph2)))
 
+
+def test_shortest_path3(): 
+    """
+    Test for graph 3
+    """
+    start_x, start_y = 3,0
+    target_x, target_y = 0,0
+    print("Results from Test 1: " + str(check_results1(start_x, start_y, target_x, target_y, test_graph=test_graph3)))
+    
 # Run Tests
 test_shortest_path1()
 test_shortest_path2()  
-
+test_shortest_path3()

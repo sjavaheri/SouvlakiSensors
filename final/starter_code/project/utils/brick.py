@@ -50,6 +50,7 @@ def restore_default_brick(bp=None):
         BP = _OLD_BP
     else:
         BP = bp
+    print("here")
 
 
 WAIT_READY_INTERVAL = 0.01
