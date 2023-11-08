@@ -42,8 +42,8 @@ if __name__ == "__main__":
     # -----------------
 
     # selection motor
-    selection_port = BP.PORT_C
-    selection_motor = Motor("C")
+    selection_port = BP.PORT_A
+    selection_motor = Motor("A")
 
     max_power_select = 40
     max_speed_select = 50
@@ -85,33 +85,48 @@ if __name__ == "__main__":
                 print(state)
 
             # test that I can select all the cubes, no matter their order
-            tests = [1,6,3,4,2,5]
+            tests = [2,4,6,1,3,5]
+            print("normal")
             for fire_number in tests: 
-                select_fire_suppressant(fire_number, selection_motor)
+                select_fire_suppressant(fire_number, selection_motor, selection_port)
+                if debug:
+                    print(fire_number)
                 time.sleep(5)
             time.sleep(10)
             # randomly scramble the list and do it again
             random.shuffle(tests)
+            print("random no1")
             for fire_number in tests: 
-                select_fire_suppressant(fire_number, selection_motor)
+                select_fire_suppressant(fire_number, selection_motor, selection_port)
+                if debug:
+                    print(fire_number)
                 time.sleep(5)
             time.sleep(10)
             # randomly scramble the list and do it again
             random.shuffle(tests)
+            print("random no2")
             for fire_number in tests: 
-                select_fire_suppressant(fire_number, selection_motor)
+                select_fire_suppressant(fire_number, selection_motor, selection_port)
+                if debug:
+                    print(fire_number)
                 time.sleep(5)
             time.sleep(10)
             # randomly scramble the list and do it again
             random.shuffle(tests)
+            print("random no3")
             for fire_number in tests: 
-                select_fire_suppressant(fire_number, selection_motor)
+                select_fire_suppressant(fire_number, selection_motor, selection_port)
+                if debug:
+                    print(fire_number)
                 time.sleep(5)
             time.sleep(10)
             # randomly scramble the list and do it again
             random.shuffle(tests)
+            print("random no4")
             for fire_number in tests: 
-                select_fire_suppressant(fire_number, selection_motor)
+                select_fire_suppressant(fire_number, selection_motor, selection_port)
+                if debug:
+                    print(fire_number)
                 time.sleep(5)
             
             BP.reset_all()
