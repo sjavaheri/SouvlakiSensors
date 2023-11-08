@@ -53,6 +53,7 @@ def move_to_point(point, city_state, current_position, current_bearing, right_wh
         int: current bearing of the robot
     """
     # indexes to the array
+    print(city_state)
     start_x, start_y = current_position
     x, y = current_position
     print("Pring: ", current_position)
@@ -128,9 +129,9 @@ def move_to_point(point, city_state, current_position, current_bearing, right_wh
             
         print("New current bearing: ", current_bearing)
         # move forward off green
-        move_forward_blind(0.05, right_wheel, left_wheel)
+        move_forward_blind(0.04, right_wheel, left_wheel)
         # move forward to next green
-        move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+        move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left, current_bearing)
         if (not last_point): 
             # adjust for next turn
             move_forward_blind(0.05, right_wheel, left_wheel)
@@ -154,31 +155,13 @@ def move_to_point(point, city_state, current_position, current_bearing, right_wh
         last_point = (start_x, start_y)
     
     return (end_x, end_y), current_bearing, last_point
-            
-        
-            
-            
-                
-                
-                
-
-
-            
-        
-        
-        
-        
-        
-        
-        
-    
-    return
+             
 
 
 # Guided Functions
 # --------------------------------
 
-def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA): 
+def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, current_bearing, SPEED=SPEED, DELTA=DELTA): 
     """
     Move robot forward until both color sensors are green
 
@@ -194,8 +177,95 @@ def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, 
         None
     """
     # loop until destination reached
+    print("hello")
     while True: 
         
+        # get the readings of the two color sensors
+        rr,gr,br = color_sensor_right.get_rgb()
+        rl,gl,bl = color_sensor_left.get_rgb()
+        color_right = classifyColor(39, rr, gr, br)
+        color_left = classifyColor(40, rl, gl, bl)
+        
+        # error correction
+        if ((current_bearing == 0 or current_bearing == 180) and color_right == "blue"): 
+            color_right = "green"
+
+        if debug: 
+            print("Left Color: ", color_left, "Right Color: ", color_right)
+
+        # check if destination is reached
+        if (color_right == "green" and color_left == "green"): 
+            # if its the first iteration, cross the green
+            left_wheel.set_dps(0)
+            right_wheel.set_dps(0)
+            return
+
+            
+        # elif (color_right == "green" or color_left == "green"): 
+        #     # if its the first iteration, cross the green
+        #     left_wheel.set_dps(SPEED)
+        #     right_wheel.set_dps(SPEED)
+        #     time.sleep(SAMPLING_RATE)
+        #     continue
+        
+        # determine if the error is to the left or right 
+        error = "none"
+        if ((color_left == "red" or color_left == "blue") and not (color_left == "green" and color_right =="green")): 
+            error = "left"
+        elif ((color_right == "red" or color_right == "blue") and not (color_right == "green" and color_left =="green")):
+            error = "right"
+        else:
+            error = "none"
+        # if debug: 
+        #     print("The current error is: ", error)
+        
+        # adjust the motors based on the error
+
+        # if error is to the left, turn right
+        # if (error == "left"): 
+        #     left_wheel.set_dps(SPEED - (DELTA))
+        #     right_wheel.set_dps(SPEED + DELTA)
+        # elif (error == "right"): 
+        #     left_wheel. set_dps(SPEED + DELTA)
+        #     right_wheel.set_dps(SPEED - (DELTA))
+        # else:
+        #     left_wheel.set_dps(SPEED)
+        #     right_wheel.set_dps(SPEED)
+        if (error == "left"): 
+           correct_turn(error, right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED, DELTA)
+        elif (error == "right"): 
+            correct_turn(error, right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED, DELTA)
+        else:
+            left_wheel.set_dps(SPEED)
+            right_wheel.set_dps(SPEED)
+
+        time.sleep(SAMPLING_RATE)
+
+
+def correct_turn(error, right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA): 
+    """
+    Turn robot to remove error
+
+    Args: 
+        right_wheel (Motor): right wheel motor
+        left_wheel (Motor): left wheel motor
+        color_sensor_right (ColorSensor): color sensor 39
+        color_sensor_left (ColorSensor): color sensor 40
+    
+    Returns:
+        None
+    """
+    # loop until destination reached
+    if (error == "left"): 
+        left_wheel.set_dps(SPEED)
+        right_wheel.set_dps(-SPEED)
+    elif (error == "right"): 
+        left_wheel.set_dps(-SPEED)
+        right_wheel.set_dps(SPEED)
+        
+    while True: 
+        if debug: 
+            print("correcting") 
         # get the readings of the two color sensors
         rr,gr,br = color_sensor_right.get_rgb()
         rl,gl,bl = color_sensor_left.get_rgb()
@@ -206,35 +276,117 @@ def move_forward(right_wheel, left_wheel,color_sensor_right, color_sensor_left, 
         #     print("Left Color: ", color_left, "Right Color: ", color_right)
 
         # check if destination is reached
+        if (color_right == "other" and color_left == "other"): 
+            # if its the first iteration, cross the green
+            left_wheel.set_dps(0)
+            right_wheel.set_dps(0)
+            return
+        if (error == "left" and not(color_right == "other")): 
+            right_wheel.set_dps(SPEED)
+            left_wheel.set_dps(0)
+            time.sleep(0.2)
+            right_wheel.set_dps(0)
+            return
+        elif (error == "right" and not (color_left == "other")): 
+            right_wheel.set_dps(0)
+            left_wheel.set_dps(SPEED)
+            time.sleep(0.2)
+            left_wheel.set_dps(0)
+            return  
+     
+        time.sleep(SAMPLING_RATE)
+
+def guided_180(right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA): 
+    """
+    Guided 180 degree turn on the spot
+
+    Args: 
+        right_wheel (Motor): right wheel motor
+        left_wheel (Motor): left wheel motor
+        color_sensor_right (ColorSensor): color sensor 39
+        color_sensor_left (ColorSensor): color sensor 40
+    
+    Returns:
+        None
+    """
+    # turn 90 blind 
+    turn_blind(90, right_wheel, left_wheel)
+    passedOnce = False
+
+    rr,gr,br = color_sensor_right.get_rgb()
+    rl,gl,bl = color_sensor_left.get_rgb()
+    color_right = classifyColor(39, rr, gr, br)
+    color_left = classifyColor(40, rl, gl, bl)
+    
+    # fix error when both color sensors have same value. It is safe to move forward
+    if ((color_left == "blue" and color_right == "blue") or (color_left =="red" and color_right == "red")): 
+        move_forward_blind(0.02, right_wheel, left_wheel)
+        print("error correcting")
+        
+    # loop until turn complete
+    left_wheel.set_dps(-SPEED)
+    right_wheel.set_dps(SPEED)
+    while True: 
+        # get the readings of the two color sensors
+        rr,gr,br = color_sensor_right.get_rgb()
+        rl,gl,bl = color_sensor_left.get_rgb()
+        color_right = classifyColor(39, rr, gr, br)
+        color_left = classifyColor(40, rl, gl, bl)
+        
+        if debug: 
+            print("left: ",color_left, "right: ", color_right)
+            
+        if (color_right == "red" or color_right == "blue"): 
+            passedOnce = True
+        if (passedOnce and (color_right == "other" or (color_right != "other" and color_left != "other"))): 
+            left_wheel.set_dps(0)
+            right_wheel.set_dps(0)
+            return
+        # if debug: 
+        #     print("Left Color: ", color_left, "Right Color: ", color_right)
+     
+        time.sleep(SAMPLING_RATE)
+
+def align(color_right, color_left,right_wheel, left_wheel,color_sensor_right, color_sensor_left, SPEED=SPEED, DELTA=DELTA): 
+    """
+    move one wheel forward until that color sensor sees green
+
+    Args: 
+        right_wheel (Motor): right wheel motor
+        left_wheel (Motor): left wheel motor
+        color_sensor_right (ColorSensor): color sensor 39
+        color_sensor_left (ColorSensor): color sensor 40
+    
+    Returns:
+        None
+    """
+    # loop until destination reached
+    if ((color_left == "green") and not (color_right == "green")): 
+        right_wheel.set_dps(SPEED)
+        left_wheel.set_dps(0)
+    elif(not (color_left == "green ") and (color_right == "green")): 
+        left_wheel.set_dps(SPEED)
+        right_wheel.set_dps(0)
+    else: 
+        return
+    while True: 
+        if debug: 
+            print("aligning")
+        # get the readings of the two color sensors
+        rr,gr,br = color_sensor_right.get_rgb()
+        rl,gl,bl = color_sensor_left.get_rgb()
+        color_right = classifyColor(39, rr, gr, br)
+        color_left = classifyColor(40, rl, gl, bl)
+
+        if debug: 
+            print("Left Color: ", color_left, "Right Color: ", color_right)
+
+        # check if destination is reached
         if (color_right == "green" and color_left == "green"): 
             # if its the first iteration, cross the green
             left_wheel.set_dps(0)
             right_wheel.set_dps(0)
             return
-        
-        # determine if the error is to the left or right 
-        error = "none"
-        if (color_left == "red" or color_left == "blue"): 
-            error = "left"
-        elif (color_right == "red" or color_right == "blue"):
-            error = "right"
-        else:
-            error = "none"
-        # if debug: 
-        #     print("The current error is: ", error)
-        
-        # adjust the motors based on the error
-
-        # if error is to the left, turn right
-        if (error == "left"): 
-            left_wheel.set_dps(SPEED - (DELTA))
-            right_wheel.set_dps(SPEED + DELTA)
-        elif (error == "right"): 
-            left_wheel. set_dps(SPEED + DELTA)
-            right_wheel.set_dps(SPEED - (DELTA))
-        else:
-            left_wheel.set_dps(SPEED)
-            right_wheel.set_dps(SPEED)
 
         time.sleep(SAMPLING_RATE)
 
@@ -302,19 +454,19 @@ def move_forward_short(distance, right_wheel, left_wheel,color_sensor_right, col
 
         time.sleep(SAMPLING_RATE)
         
-def reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left): 
+def reverse( right_wheel, left_wheel, color_sensor_right, color_sensor_left, current_bearing): 
     """
     Reverse after a cube has been deployed to the previous intersection
     """
-    move_backward_blind(0.245, right_wheel, left_wheel)
+    move_backward_blind(0.12, right_wheel, left_wheel)
     # move_forward_short(0.20, right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
     # move_backward_blind(0.15, right_wheel, left_wheel)
     # move_forward_short(0.15, right_wheel, left_wheel, color_sensor_right, color_sensor_left) 
     # move_backward_blind(0.225, right_wheel, left_wheel)
     # reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-    # turn_blind(180, right_wheel, left_wheel)
-    # move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
-    # move_forward_blind(0.05, right_wheel, left_wheel)
+    guided_180(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+    move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left, current_bearing)
+    move_forward_blind(0.05, right_wheel, left_wheel)
 
 def reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left):
     """
@@ -625,7 +777,8 @@ def move_forward_blind(distance, right_wheel, left_wheel,SPEED=SPEED):
     left_wheel.set_position_relative(int(distance * DIST_TO_DEG))
     right_wheel.set_position_relative(int(distance * DIST_TO_DEG))
     wait_for_motor(right_wheel)
-
+    
+    
 def turn_blind(angle, right_wheel, left_wheel): 
     """
     Turn the robot blindly by an angle
@@ -640,9 +793,11 @@ def turn_blind(angle, right_wheel, left_wheel):
     """
     left_wheel.set_dps(SPEED)
     right_wheel.set_dps(SPEED)
-    left_wheel.set_position_relative(int(angle*0.96* ORIENT_TO_DEG))
-    right_wheel.set_position_relative(-int(angle *0.96*ORIENT_TO_DEG))
+    left_wheel.set_position_relative(-int(angle*0.96* ORIENT_TO_DEG))
+    right_wheel.set_position_relative(int(angle *0.96*ORIENT_TO_DEG))
     wait_for_motor(right_wheel)
+    print("inside turn")
+
 
 
 def move_backward_blind(distance, right_wheel, left_wheel,SPEED=SPEED): 
@@ -749,9 +904,9 @@ def classifyColor(id, red, green, blue):
     """
     # select color table based on id
     if (id == 39):
-        colorTable = colorTable39
-    elif (id == 40):
         colorTable = colorTable40
+    elif (id == 40):
+        colorTable = colorTable39
     else:
         return "invalid id"
     

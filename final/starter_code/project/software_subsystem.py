@@ -135,19 +135,19 @@ if __name__ == "__main__":
 
     # color sensors
     # color sensor 39
-    color_sensor_right = EV3ColorSensor(3)
-    color_sensor_left = EV3ColorSensor(1)
+    color_sensor_right = EV3ColorSensor(1)
+    color_sensor_left = EV3ColorSensor(3)
 
     # Initialize Motors
     # -----------------
 
     # left wheel
-    left_wheel_port = BP.PORT_A
-    left_wheel = Motor("A")
+    left_wheel_port = BP.PORT_B
+    left_wheel = Motor("B")
 
     # right wheel
-    right_wheel_port = BP.PORT_B
-    right_wheel = Motor("B")
+    right_wheel_port = BP.PORT_A
+    right_wheel = Motor("A")
 
     max_power_wheels = 40
     max_speed_wheels = 50
@@ -240,15 +240,14 @@ if __name__ == "__main__":
                     print(state)
 
                 # reverse
-                reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
+                reverse(right_wheel, left_wheel, color_sensor_right, color_sensor_left, current_bearing)
                 # robot turned around by 180 during reversal
                 current_position = reverse_point
-                # current_bearing = (current_bearing + 180) % 360
+                current_bearing = (current_bearing + 180) % 360
                 if (debug):
                     print("Successfully reversed to: ", current_position)
 
             # go home
-            print("going home")
             current_position, current_bearing,reverse_point = move_to_point(
                 (3,0),
                 city_map,
@@ -260,10 +259,8 @@ if __name__ == "__main__":
                 color_sensor_left,
                 home = True
             )
-            print("home")
-
-            # reorient to have forward facing bearing
-            # use turn function
+            # reset the city state             
+            city_map = [[0 for _ in range(4)] for _ in range(4)]
 
         # capture all exceptions
         except BaseException:
