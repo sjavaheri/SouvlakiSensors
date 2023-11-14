@@ -11,6 +11,7 @@ from utils.brick import (
 )
 import brickpi3
 import time
+import itertools
 
 # other subystem code
 from movement import *
@@ -113,15 +114,71 @@ def get_user_input():
         fire_coords.append((x, y))
         fires.append((x, y, fire_type))
 
-    # sort fires by increasing distance from (0,0)
-    sorted_coords = sorted(fire_coords, key=lambda x: ((x[0] - 3) ** 2 + x[1] ** 2) ** 0.5)
+
 
     # update city_map with fire types
     for x, y, fire_type in fires:
         city_map[x][y] = fire_type
 
-    return sorted_coords
+    # # sort fires by increasing distance from (0,0)
+    if (len(fire_coords) == 1):
+        return fire_coords
+    
+    if (len(fire_coords) == 2):
+        sorted_coords = sorted(fire_coords, key=lambda x: ((x[0] - 3) ** 2 + x[1] ** 2) ** 0.5)
+        return sorted_coords
+    
+    # sort fires to get shortest overall path
+    # try all permutations, and choose the one with the shortest path
+    else: 
+        length = 99999999
+        order = []
+        permutations = list(itertools.permutations(fire_coords))
+        count = 0
+        for permutation in permutations:
+            x1, y1 = permutation[0]
+            x2, y2 = permutation[1]
+            x3, y3 = permutation[2]
+            
+            path1 = shortest_path(city_map, 3, 0, x1, y1)
+            # get the last point in the past
+            last1 = (0,0)
+            if len(path1) == 1:
+                last1 = path1[0]
+            else:
+                last1 = path1[-2]
+            last1x, last1y = last1
+            
+            path2 = shortest_path(city_map, last1x, last1y, x2, y2)
+            
+            last2 = (0,0)
+            if len(path2) == 1:
+                last2 = path2[0]
+            else:
+                last2 = path2[-2]
+            last2x, last2y = last2
+            
+            path3 = shortest_path(city_map, last2x, last2y, x3, y3)
+            
+            last3 = (0,0)
+            if len(path3) == 1:
+                last3 = path3[0]
+            else:
+                last3 = path3[-2]
+                
+            last3x, last3y = last3
+            
+            path4 = shortest_path(city_map, last3x, last3y, 3, 0)
+            newlength = len(path1) + len(path2) + len(path3) + len(path4)
+            if newlength < length:
+                length = newlength
+                order = permutation
+            if debug: 
+                print("\nOption for Permulation ", count, ": with order ", permutation, "and length: ", newlength, "\n")
 
+        if debug: 
+            print ("Order chosen: ", order, "with length", length)
+        return order
 
 if __name__ == "__main__":
     """
@@ -224,12 +281,10 @@ if __name__ == "__main__":
                 
                 if debug: 
                     print(state)
-                    print("whyyyyyyyyyy")
 
                 # select fire suppressant
                 print("here")
                 x,y = point
-                print("calling function select")
                 select_fire_suppressant(city_map[x][y], selection_motor, selection_port)
                 state = "deploying"
                 if debug: 
