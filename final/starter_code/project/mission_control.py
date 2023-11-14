@@ -153,15 +153,15 @@ if __name__ == "__main__":
     max_speed_wheels = 50
 
     # selection motor
-    selection_port = BP.PORT_C
-    selection_motor = Motor("C")
+    selection_port = BP.PORT_D
+    selection_motor = Motor("D")
 
     max_power_select = 40
     max_speed_select = 50
 
     # deployment motor
-    deployment_port = BP.PORT_D
-    deployment_motor = Motor("D")
+    deployment_port = BP.PORT_C
+    deployment_motor = Motor("C")
 
     max_power_deploy = 40
     max_speed_deploy = 150
@@ -224,17 +224,16 @@ if __name__ == "__main__":
                 
                 if debug: 
                     print(state)
-                time.sleep(2)
 
                 # select fire suppressant
-                # select_fire_suppressant(city_map[x][y], selection_motor)
+                x,y = point
+                select_fire_suppressant(city_map[x][y], selection_motor, selection_port)
                 state = "deploying"
                 if debug: 
                     print(state)
-                time.sleep(2)
 
                 # deploy fire suppressant
-                # deploy_fire(deployment_motor)
+                deploy_fire(deployment_motor)
                 state = "reversing"
                 if debug: 
                     print(state)

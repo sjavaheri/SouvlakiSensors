@@ -8,6 +8,22 @@ import brickpi3
 
 debug = True
 BP = brickpi3.BrickPi3()
+SAMPLING_RATE=0.2
+
+def wait_for_motor(motor): 
+    """
+    Wait for a motor to finish rotating
+
+    Args: 
+        motor (Motor) : the motor
+
+    Returns: 
+        None
+    """
+    while BP.get_motor_status(motor.port)[3] == 0 : 
+        time.sleep(SAMPLING_RATE)
+    while BP.get_motor_status(motor.port)[3] != 0 :
+        time.sleep(SAMPLING_RATE)
 
 # Main Function for Selection Subsystem
 # --------------------------------
@@ -32,7 +48,6 @@ def select_fire_suppressant(fire_type, selection_motor, selection_port):
         C       Purple   3           60
 
     """
-    time.sleep(4)
     # check / test if it is better to get position with get_motor_encoder or by updating current position variable
     absolutePosition = BP.get_motor_encoder(selection_port)
     current_position = absolutePosition % 360
@@ -50,5 +65,6 @@ def select_fire_suppressant(fire_type, selection_motor, selection_port):
 
     # set motor to new relative position
     selection_motor.set_position_relative(relative_move)
+    wait_for_motor(selection_motor)
 
     return
