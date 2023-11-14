@@ -224,9 +224,12 @@ if __name__ == "__main__":
                 
                 if debug: 
                     print(state)
+                    print("whyyyyyyyyyy")
 
                 # select fire suppressant
+                print("here")
                 x,y = point
+                print("calling function select")
                 select_fire_suppressant(city_map[x][y], selection_motor, selection_port)
                 state = "deploying"
                 if debug: 
