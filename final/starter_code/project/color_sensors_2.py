@@ -15,9 +15,9 @@ import math
 COLOR_SENSOR_DATA_FILE = "../data_analysis/color_sensor.csv"
 SLEEP_TIME = 0.1
 # complete this based on your hardware setup
-color_sensor_1 = EV3ColorSensor(2)
-TouchSensor = TouchSensor(1)
-color_sensor_2 = EV3ColorSensor(3)
+color_sensor_left = EV3ColorSensor(3)
+TouchSensor = TouchSensor(4)
+color_sensor_right = EV3ColorSensor(1)
 
 wait_ready_sensors(True) # Input True to see what the robot is trying to initialize! False to be silent.
 
@@ -54,14 +54,16 @@ def collect_color_sensor_data(debug=False, classify=False):
             if (state == True): 
                 counter = counter + 1
                 # break down the r,g,b values
-                red1, green1, blue1 = color_sensor_1.get_rgb()
-                red2, green2, blue2 = color_sensor_2.get_rgb()
+                red1, green1, blue1 = color_sensor_left.get_rgb()
+                red2, green2, blue2 = color_sensor_right.get_rgb()
                 # classify the color of the cube if requested
                 if (classify): 
                     color1 = classifyColoredCube39(red1, green1, blue1)
-                    print("The reading at color sensor 1 is: ", color1)
+                    print("The reading at color sensor left is: ", color1)
+                    print("The RGB reading is: ",red1, green1, blue1)
                     color2 = classifyColoredCube40(red2, green2, blue2)
-                    print("The reading at color sensor 2 is: ", color2)
+                    print("The reading at color sensor right is: ", color2)
+                    print("The RGB reading is: ",red2, green2, blue2)
                 state = False
                 # sleep for 0.1 seconds
                 time.sleep(SLEEP_TIME)

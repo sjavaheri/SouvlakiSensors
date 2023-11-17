@@ -23,7 +23,7 @@ from deployment import *
 
 # state of the city. Represented by 4 * 4 matrix of 0s.
 # fire code : Types A - F Represented by integers 1 - 6
-debug = True
+debug = False
 city_map = [[0 for _ in range(4)] for _ in range(4)]
 current_bearing = 0
 current_position = (3, 0)
