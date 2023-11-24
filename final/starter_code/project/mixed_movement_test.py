@@ -146,7 +146,6 @@ if __name__ == "__main__":
 
 
             # Test 3 - Reverse - Succeeds
-
             move_forward(right_wheel, left_wheel, color_sensor_right, color_sensor_left)
             move_backward_blind(0.05,right_wheel, left_wheel)
             reverse_guided(right_wheel, left_wheel, color_sensor_right, color_sensor_left)

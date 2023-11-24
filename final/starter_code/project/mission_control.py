@@ -23,7 +23,7 @@ from deployment import *
 
 # state of the city. Represented by 4 * 4 matrix of 0s.
 # fire code : Types A - F Represented by integers 1 - 6
-debug = False
+debug = True
 city_map = [[0 for _ in range(4)] for _ in range(4)]
 current_bearing = 0
 current_position = (3, 0)
@@ -33,6 +33,12 @@ state = ""
 def wait_for_sensors(c1, c2):
     """
     Waits for the sensors to be ready
+    
+    Args: 
+        c1 (sensor) : color sensor 1
+        c2 (sensor) : color sensor 2
+        
+    
     """
     # example from brick pi 2
     test_left_cs = 0
@@ -88,7 +94,7 @@ def get_user_input():
     Format: x1,y1,LETTER1,x2,y2,LETTER,x3,y3,LETTER3
 
     Returns:
-        list : a list of tuples representing the fire coordinates, in order of increasing distance from the starting position 0,0
+        list : a list of tuples representing the fire coordinates, in optimal order of visiting the fires (found with exhaustive search)
 
     """
 
@@ -106,6 +112,7 @@ def get_user_input():
     # convert letter (fire types) into integers
     fire_coords = []  # list containing only location
     fires = []  # list containing the location and types of fires
+    
     for fire in fire_list:
         # convert coordinates into proper coordinates for array
         x = 3 - int(fire[1])
@@ -114,16 +121,15 @@ def get_user_input():
         fire_coords.append((x, y))
         fires.append((x, y, fire_type))
 
-
-
     # update city_map with fire types
     for x, y, fire_type in fires:
         city_map[x][y] = fire_type
 
-    # # sort fires by increasing distance from (0,0)
+    # if one fire coord, do nothing
     if (len(fire_coords) == 1):
         return fire_coords
     
+    # if 2 fire coords, sort by distance from origin
     if (len(fire_coords) == 2):
         sorted_coords = sorted(fire_coords, key=lambda x: ((x[0] - 3) ** 2 + x[1] ** 2) ** 0.5)
         return sorted_coords
@@ -131,17 +137,23 @@ def get_user_input():
     # sort fires to get shortest overall path
     # try all permutations, and choose the one with the shortest path
     else: 
+        # get all permutations
         length = 99999999
         order = []
         permutations = list(itertools.permutations(fire_coords))
         count = 0
+        # iterate through all possibilities
         for permutation in permutations:
+            if debug: 
+                print("Inside Permutation ", count)
             x1, y1 = permutation[0]
             x2, y2 = permutation[1]
             x3, y3 = permutation[2]
             
+            # calculate path to point 1
             path1 = shortest_path(city_map, 3, 0, x1, y1)
-            # get the last point in the past
+            if debug: 
+                print ("Path 1: ", path1)
             last1 = (0,0)
             if len(path1) == 1:
                 last1 = path1[0]
@@ -149,8 +161,12 @@ def get_user_input():
                 last1 = path1[-2]
             last1x, last1y = last1
             
+            # calculate path from point 1 to point 2
             path2 = shortest_path(city_map, last1x, last1y, x2, y2)
             
+            if debug: 
+                print ("Path 2: ", path2)
+                
             last2 = (0,0)
             if len(path2) == 1:
                 last2 = path2[0]
@@ -158,7 +174,10 @@ def get_user_input():
                 last2 = path2[-2]
             last2x, last2y = last2
             
+            # calculate path from point 2 to point 3
             path3 = shortest_path(city_map, last2x, last2y, x3, y3)
+            if debug: 
+                print ("Path 3: ", path3)
             
             last3 = (0,0)
             if len(path3) == 1:
@@ -168,14 +187,19 @@ def get_user_input():
                 
             last3x, last3y = last3
             
+            # calculate path from point 3 to point 4
             path4 = shortest_path(city_map, last3x, last3y, 3, 0)
+            if debug: 
+                print ("Path 4: ", path4)
+                
+            # calculate length of overall use of this permutation
             newlength = len(path1) + len(path2) + len(path3) + len(path4)
             if newlength < length:
                 length = newlength
                 order = permutation
             if debug: 
                 print("\nOption for Permulation ", count, ": with order ", permutation, "and length: ", newlength, "\n")
-
+        # return
         if debug: 
             print ("Order chosen: ", order, "with length", length)
         return order
@@ -191,7 +215,6 @@ if __name__ == "__main__":
     # ------------------------
 
     # color sensors
-    # color sensor 39
     color_sensor_right = EV3ColorSensor(1)
     color_sensor_left = EV3ColorSensor(3)
 
@@ -206,15 +229,15 @@ if __name__ == "__main__":
     right_wheel_port = BP.PORT_A
     right_wheel = Motor("A")
 
-    max_power_wheels = 40
-    max_speed_wheels = 50
+    max_power_wheels = 60
+    max_speed_wheels = 200
 
     # selection motor
     selection_port = BP.PORT_D
     selection_motor = Motor("D")
 
-    max_power_select = 40
-    max_speed_select = 50
+    max_power_select = 60
+    max_speed_select = 100
 
     # deployment motor
     deployment_port = BP.PORT_C

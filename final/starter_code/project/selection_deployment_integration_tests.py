@@ -43,15 +43,15 @@ if __name__ == "__main__":
     # -----------------
 
     # selection motor
-    selection_port = BP.PORT_C
-    selection_motor = Motor("C")
+    selection_port = BP.PORT_D
+    selection_motor = Motor("D")
 
     max_power_select = 40
     max_speed_select = 50
 
     # deployment motor
-    deployment_port = BP.PORT_D
-    deployment_motor = Motor("D")
+    deployment_port = BP.PORT_C
+    deployment_motor = Motor("C")
 
     max_power_deploy = 40
     max_speed_deploy = 150
