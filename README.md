@@ -5,7 +5,7 @@
 Our task was to build a prototype of an imaginary 'fire fighting robot'. This robot needed to be able to autonomously navigate a city grid to up to 3 buildings on fire, and based on the type of fire occuring at a particular location, place the right fire suppressant on that location
 
 ## Confidentiality
-Further details about the assignment, the design documentation of the robot, and other code needed to implement our solution are confidential, and available upon request 🔒
+Further details about the assignment and the design documentation of the robot are confidential, and available upon request 🔒
 
 ## Brief Overview
 This repository shows the code we implemented for our solution, a robot with three subsystems. The most important code is located [here](https://github.com/sjavaheri/SouvlakiSensors/tree/main/final/starter_code/project)
